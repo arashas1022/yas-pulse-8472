@@ -42,6 +42,7 @@ input,select{border-radius:12px;padding:11px}
 .pz-mv{background:linear-gradient(135deg,#d9b26f,#f1d9a0);color:#1d1b19;border-radius:16px;padding:14px;text-align:center;margin:10px 0}.pz-mv b{font-size:22px}.pz-ok{background:rgba(255,255,255,.08);border:1px solid #d9b26f;border-radius:14px;padding:10px;margin-top:8px;font-size:13px}.pz-wn{background:rgba(192,57,43,.25);border:1px solid #c0392b;border-radius:14px;padding:10px;margin-top:8px;font-size:13px}
 .sb{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;align-items:center;padding-bottom:2px}.sbk{flex:none;border:1px solid #d9b26f;background:rgba(217,178,111,.14);color:var(--ink);border-radius:20px;padding:8px 14px;font:inherit;font-weight:700}.ch{flex:none;border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:20px;padding:8px 14px;font:inherit}.ch.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 html{touch-action:manipulation;-webkit-text-size-adjust:100%}input,select,textarea{font-size:16px!important}
+.acc-h{display:flex;gap:12px;align-items:center;width:100%;border:0;background:none;color:var(--ink);font:inherit;padding:6px 2px}.acc-b{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.acc-b>.card{box-shadow:none;border-color:var(--line);background:transparent}
 </style></head><body><div id="app"></div>
 <script>
 const $=i=>document.getElementById(i);
@@ -198,11 +199,13 @@ const importCard=()=>{if(!ADM())return'';const r=IMP;let h=`<div class="card"><h
  return h+'</div>'};
 
 let DR='',TPD='',DPD='',TGO=false;
+let NAVC=[],ACC={sales:'',war:''};const isG=v=>v=='gsales'||v=='gwar';
 const GRP={sales:{t:'فروش و موجودی',i:'🧾',k:['sales','inv','rs','hist']},war:{t:'رقابت',i:'🏆',k:['war','lg']}};
 const SUBT={sales:['ثبت و گزارش فروش','فروش روزانه، ورودی فروشگاه، گزارش روز'],inv:['موجودی و نات شو','موجودی لحظه‌ای و جستجوی نات شو'],rs:['دلایل عدم فروش','ثبت و آمار دلایل'],hist:['ماه‌های قبل','عملکرد ماه‌های گذشته'],war:['اتاق جنگ','عملیات، MVP و جدول روزانه'],lg:['لیگ فروش','رتبهٔ ما در گروه']};
 const navItems=nav=>{const o=[];['dash','team'].forEach(k=>nav.includes(k)&&o.push({id:k,t:TL[k],i:IC[k]}));Object.entries(GRP).forEach(([g,x])=>{const ks=x.k.filter(k=>nav.includes(k));if(ks.length==1)o.push({id:ks[0],t:TL[ks[0]],i:IC[ks[0]]});else if(ks.length)o.push({id:g,g:1,t:x.t,i:x.i})});['act','set'].forEach(k=>nav.includes(k)&&o.push({id:k,t:TL[k],i:IC[k]}));return o};
-const navHtml=nav=>navItems(nav).map(x=>{const on=x.g?GRP[x.id].k.includes(V):x.id==V;return`<button class="${on?'on':''}" data-a="${x.g?'dr':'go'}" data-id="${x.id}"><span style="font-size:20px;display:block;line-height:1.3">${x.i}</span>${x.t}</button>`}).join('');
+const navHtml=nav=>navItems(nav).map(x=>{const on=x.g?V=='g'+x.id:x.id==V;return`<button class="${on?'on':''}" data-a="go" data-id="${x.g?'g'+x.id:x.id}"><span style="font-size:20px;display:block;line-height:1.3">${x.i}</span>${x.t}</button>`}).join('');
 const subBar=nav=>{const g=Object.keys(GRP).find(x=>GRP[x].k.includes(V));if(!g)return'';const ks=GRP[g].k.filter(k=>nav.includes(k));return ks.length>1?`<div class="sb"><button class="sbk" data-a="dr" data-id="${g}">→ ${GRP[g].t}</button>${ks.map(k=>`<button class="ch ${k==V?'on':''}" data-a="go" data-id="${k}">${TL[k]}</button>`).join('')}</div>`:''};
+const groupPage=(g,nav)=>{const ks=GRP[g].k.filter(k=>nav.includes(k));return`<h2 style="margin:4px 4px 12px;font-size:19px;font-weight:800">${GRP[g].i} ${GRP[g].t}</h2>`+ks.map(k=>`<div class="card"><button class="acc-h" data-a="acc" data-g="${g}" data-id="${k}"><span class="dti">${IC[k]}</span><span style="flex:1;text-align:start"><b>${SUBT[k][0]}</b><div class="sm">${SUBT[k][1]}</div></span><span style="font-size:18px">${ACC[g]==k?'▴':'▾'}</span></button>${ACC[g]==k?`<div class="acc-b">${V_[k]()}</div>`:''}</div>`).join('')};
 const drawer=nav=>{if(!DR)return'';const ks=GRP[DR].k.filter(k=>nav.includes(k));return`<div class="dbk" data-a="drx"></div><div class="dsh"><div class="dh"></div><h3 style="border:0;padding:0;font-size:17px;margin-bottom:4px">${GRP[DR].t}</h3>${ks.map(k=>`<button class="dt ${k==V?'on':''}" data-a="go" data-id="${k}"><span class="dti">${IC[k]}</span><span><b>${SUBT[k][0]}</b><div class="sm">${SUBT[k][1]}</div></span></button>`).join('')}</div>`};
 const dayPerf=(s,iso)=>{const p=pd(iso);return SL(s).map(e=>{const t=eD(e,s,p.d,p.m),a=DB.sales.filter(x=>x.emp==e.id&&x.date==iso).reduce((z,x)=>z+x.sales,0);return{e,t,a,r:t?a/t:0}}).filter(x=>x.t>0).sort((a,b)=>b.r-a.r||b.a-a.a)};
 const rank=(s,st)=>SL(s).map(e=>({e,r:EK(e,st).s/(eT(e,s,st.mo)||1)})).sort((a,b)=>b.r-a.r).map(x=>x.e);
@@ -244,6 +247,7 @@ function alerts(s,st){const a=[],c=DB.set;if(st.m.s&&st.pace<c.yel)a.push('فر�
 const al=a=>a.length?a.map(x=>`<div class="al">${x}</div>`).join(''):'<div class="sm">هشداری وجود ندارد ✓</div>';
 const pw=()=>`<div class="card"><h3>تغییر رمز من</h3><input type="password" data-c="pw" placeholder="رمز جدید (حداقل ۴ کاراکتر)"></div>`;
 
+V_.gsales=()=>groupPage('sales',NAVC);V_.gwar=()=>groupPage('war',NAVC);
 V_.dash=()=>sloganCard()+(U.role=='sales'?me():remind()+home(curS()));
 function home(s){const st=S(s),g=st.d.s-st.tt;return poster(s,st)+`${dayCard(s)}
 <div class="card"><h3>ماه جاری (تعداد آیتم)</h3><div class="grid">${kc('Target',fmt(s.target))}${kc('Actual',fmt(st.m.s))}${kc('Achievement',pc(st.ach))}${kc('Remaining',fmt(st.rem))}</div>${bar(st.ach)}
@@ -292,9 +296,9 @@ V_.set=()=>{const c=DB.set,s=curS(),f=(l,k)=>`<label>${l}</label><input data-c="
 <div class="card"><h3>آستانهٔ هشدار</h3>${f('حداقل UPT','upt')}${f('حداقل Conversion ٪','conv')}${f('حد زرد (نسبت به برنامه، مثل 0.85)','yel')}${f('حداقل موجودی (هشدار)','low')}</div>
 <div class="card"><h3>لیگ و امتیاز</h3>${f('روز چک‌پوینت','cp')}${f('حداقل Achievement چک‌پوینت ٪','minp')}${f('وزن Achievement','wa')}${f('وزن UPT','wu')}${f('وزن Conversion','wc')}</div>${importCard()}${usersCard()}
 `};
-function login(){return`<main><div class="card" style="margin-top:40px"><div class="logo">RETAIL PULSE</div><div class="sub">Retail Performance & Operations Platform</div><br><label>نام کاربری</label><input id="l_u" autocapitalize="off" autocomplete="username" placeholder="مثلاً ehsan yekta"><label>رمز</label><input id="l_p" type="password"><div class="err">${ERR}</div><button class="btn" data-a="login">ورود</button><p class="sm">نام کاربری و رمز را از مدیر فروشگاه بگیرید. (نسخه v9) بعد از ورود می‌توانید رمزتان را عوض کنید.</p></div></main>`}
-function render(){const a=$('app');if(!U){a.innerHTML=login();return}const nav=NAV[U.role].concat(ADM()?['set']:[]);if(!nav.includes(V))V=nav[0];
- a.innerHTML=`<header><div><div class="logo">RETAIL PULSE</div><div class="sub">${U.name} · ${R[U.role]} · ${ADM()?'دسترسی کامل':ENT()?'ثبت اطلاعات':'فقط مشاهده'} · v9</div></div><button class="ln" style="font-size:13px" data-a="out">خروج</button></header><main>${subBar(nav)}${V_[V]()}</main><nav>${navHtml(nav)}</nav>${drawer(nav)}`}
+function login(){return`<main><div class="card" style="margin-top:40px"><div class="logo">RETAIL PULSE</div><div class="sub">Retail Performance & Operations Platform</div><br><label>نام کاربری</label><input id="l_u" autocapitalize="off" autocomplete="username" placeholder="مثلاً ehsan yekta"><label>رمز</label><input id="l_p" type="password"><div class="err">${ERR}</div><button class="btn" data-a="login">ورود</button><p class="sm">نام کاربری و رمز را از مدیر فروشگاه بگیرید. (نسخه v10) بعد از ورود می‌توانید رمزتان را عوض کنید.</p></div></main>`}
+function render(){const a=$('app');if(!U){a.innerHTML=login();return}const nav=NAV[U.role].concat(ADM()?['set']:[]);NAVC=nav;if(!nav.includes(V)&&!isG(V))V=nav[0];
+ a.innerHTML=`<header><div><div class="logo">RETAIL PULSE</div><div class="sub">${U.name} · ${R[U.role]} · ${ADM()?'دسترسی کامل':ENT()?'ثبت اطلاعات':'فقط مشاهده'} · v10</div></div><button class="ln" style="font-size:13px" data-a="out">خروج</button></header><main>${V_[V]()}</main><nav>${navHtml(nav)}</nav>`}
 const A={
 dr(d){DR=DR==d.id?'':d.id;render()},drx(){DR='';render()},
 async login(){const un=$('l_u').value,p=D($('l_p').value);let r=await sb.auth.signInWithPassword({email:em(un),password:p});if(r.error)r=await sb.auth.signInWithPassword({email:em(un),password:p+'-rp'});if(r.error){ERR='نام کاربری یا رمز نادرست است';return render()}try{await start();ERR=''}catch(e){ERR=e.message;await sb.auth.signOut();U=null}render()},
@@ -307,6 +311,7 @@ async saveSale(){const s=curS(),eid=SE==='S'?0:(SE||SL(s)[0].id),date=SD,a=NA($(
    await ck(sb.from('sales_entry_items').delete().eq('entry_id',en.id));const rows=Object.entries(it).map(([n,q])=>({entry_id:en.id,category_id:CATID[n],qty:q}));if(rows.length)await ck(sb.from('sales_entry_items').insert(rows))}
   await load()}catch(e){ERR='ذخیره نشد: '+e.message}}render()},
 tgo(){TGO=!TGO;render()},
+acc(d){ACC[d.g]=ACC[d.g]==d.id?'':d.id;render();if(d.id=='hist'&&ACC[d.g]=='hist')loadHist().then(()=>{if(!editing())render()}).catch(()=>{})},
 async saveFF(){const v=N($('f_ff').value);if(isNaN(v)||v<0||v%1){FERR='ورودی باید عدد صحیح نامنفی باشد';return render()}try{FERR='';await ck(sb.from('footfall').upsert({store_id:curS().id,entry_date:SD,visitors:v,updated_at:new Date().toISOString()},{onConflict:'store_id,entry_date'}));await load()}catch(e){FERR=e.message}render()},
 async saveTgt(){const s=curS(),p=pd(tdy()),day=+document.querySelector('[data-c=td]').value,v=SL(s).map(e=>[e,N($('f_t'+e.id).value||0)]);
  if(v.some(x=>isNaN(x[1])||x[1]<0||x[1]%1)){ERR='تارگت‌ها باید عدد صحیح نامنفی باشند';return render()}
@@ -346,7 +351,7 @@ async stf(t){const s=curS(),f=t.dataset.f;try{if(f=='target'){const n=N(t.value)
 async stk(t){const n=N(t.value),c=CATS[+t.dataset.i];if(isNaN(n)||n<0||n%1)return render();const d=n-stock(c);try{if(d)await ck(sb.from('inventory_movements').insert({store_id:curS().id,category_id:CATID[c],qty:d,kind:'adjustment'}));await load()}catch(e){alert(e.message)}render()},
 async pw(t){const v=D(t.value);if(v.length<6){alert('رمز باید حداقل ۶ کاراکتر باشد');return render()}const r=await sb.auth.updateUser({password:v});t.value='';alert(r.error?'تغییر رمز نشد: '+r.error.message:'رمز تغییر کرد')}
 };
-const OA=['login','out','go','lt','pr','rc','dr','drx'],OC=['pw','pd','se','re','hm'],AA=['uNew','uReset','uTog','wrSave','impGo'],AC=['emf','setv','stf','impf'];
+const OA=['login','out','go','lt','pr','rc','dr','drx','acc'],OC=['pw','pd','se','re','hm'],AA=['uNew','uReset','uTog','wrSave','impGo'],AC=['emf','setv','stf','impf'];
 document.addEventListener('click',e=>{const t=e.target.closest('[data-a]'),a=t&&t.dataset.a;if(a&&A[a]&&(OA.includes(a)||(AA.includes(a)?ADM():ENT())))A[a](t.dataset)});
 document.addEventListener('change',e=>{const t=e.target.closest('[data-c]'),c=t&&t.dataset.c;if(c&&C[c]&&(OC.includes(c)||(AC.includes(c)?ADM():ENT())))C[c](t)});
 document.addEventListener('input',e=>{if(e.target.id=='ns_q'){NQ=e.target.value;$('ns_l').innerHTML=nsRows()}});
