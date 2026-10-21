@@ -71,7 +71,7 @@ const mk=i=>{const p=pd(i);return p.y+'-'+p.m},tdy=()=>new Date().toISOString().
 const iso=d=>new Date(Date.UTC(2026,8,22+d)).toISOString().slice(0,10);
 const pdate=i=>new Intl.DateTimeFormat('fa-IR-u-ca-persian',{dateStyle:'long'}).format(new Date(i+'T12:00:00'));
 const R={mgr:'مدیر فروشگاه',lead:'لیدر فروشگاه',sales:'فروشنده',area:'مدیر منطقه',ops:'مدیر عملیات',admin:'ادمین'};
-const M10=['dash','sales','inv','stk','mov','srisk','lrisk','rs','hist','tperf','tweak','tew','tcoach','ttrend','war','lg','drank','tprog','act'];
+const M10=['dash','wrep','tint','sales','inv','stk','mov','srisk','lrisk','rs','hist','tperf','tweak','tew','tcoach','ttrend','war','lg','drank','tprog','act'];
 const NAV={mgr:M10,lead:M10,sales:['dash','war','inv','rs','hist'],area:M10,ops:M10};
 const TL={tperf:'Performance',tmvp:'Daily MVP',tweak:'Weak Performance',tew:'Early Warning',tcoach:'Coaching',ttrend:'Team Trends',srisk:'Stock Risk',lrisk:'Lost Sale Risk',drank:'Daily Ranking',tprog:'Target Progress',imp:'Import Excel',dash:'داشبورد',sales:'فروش',team:'تیم',war:'اتاق جنگ',hist:'ماه‌های قبل',inv:'موجودی',stk:'انبارگردانی',mov:'پرفروش و کم‌فروش',rs:'دلایل',act:'اکشن‌پلن',lg:'لیگ',set:'تنظیمات'};
 const IC={tperf:'📈',tmvp:'🏆',tweak:'⚠️',tew:'🚦',tcoach:'🎯',ttrend:'📉',srisk:'📦',lrisk:'🚨',drank:'🥇',tprog:'🎯',imp:'📥',dash:'📊',sales:'🧾',team:'👥',war:'⚔️',hist:'🗓',inv:'📦',stk:'📋',mov:'📈',rs:'💬',act:'✅',lg:'🏆',set:'⚙️'};
@@ -119,7 +119,7 @@ async function load(){
   acts:ap.map(x=>({id:x.id,store:sid,problem:x.problem,cause:x.root_cause||'',action:x.action,owner:x.owner||'',due:x.due||'',status:SFA[x.status]})),
   set:{low:th.low??3,weak:th.weak??.5,yel:th.yellow??.85,upt:th.upt??1.3,conv:th.conv??5,wa:an.wa??50,wu:an.wu??30,wc:an.wc??20,cp:g.checkpoint_day??15,minp:g.min_pct??50,prize:g.prize_positions??3},
   lg:{date:sn[0]?sn[0].snap_date:tdy(),rows:pa.map(x=>{const q=sn.find(y=>y.participant_id==x.id);return{id:x.id,n:x.name,p:q?+q.achievement_pct:0,me:x.is_us}})},
-  stk:Object.fromEntries(sk.map(x=>[x.category_id,x.qty])),wc:(as.find(x=>x.key=='warroom')||{}).value||null,tasks:(as.find(x=>x.key=='tasks')||{}).value||DEFT,rost:ro,ff:ff.map(x=>({date:x.entry_date,v:x.visitors})),ts:(ts||[]).map(x=>({emp:x.employee_id,date:x.work_date,shift:x.shift,hours:+x.hours}))};
+  stk:Object.fromEntries(sk.map(x=>[x.category_id,x.qty])),wc:(as.find(x=>x.key=='warroom')||{}).value||null,tasks:(as.find(x=>x.key=='tasks')||{}).value||DEFT,coach:(as.find(x=>x.key=='coaching')||{}).value||[],rost:ro,ff:ff.map(x=>({date:x.entry_date,v:x.visitors})),ts:(ts||[]).map(x=>({emp:x.employee_id,date:x.work_date,shift:x.shift,hours:+x.hours}))};
  {const hl=(as.find(x=>x.key=='health')||{}).value||{};Object.assign(DB.set,{hw_ach:hl.hw_ach??30,hw_pace:hl.hw_pace??20,hw_team:hl.hw_team??15,hw_conv:hl.hw_conv??15,hw_upt:hl.hw_upt??10,hw_atv:hl.hw_atv??10,atvT:hl.atvT??0,gapA:hl.gapA??1.1,gapB:hl.gapB??1.35,hs_exc:hl.hs_exc??85,hs_ok:hl.hs_ok??70,hs_att:hl.hs_att??50})}
  DB.wr=[];if(DB.wc&&DB.wc.ym==p.y+'-'+p.m)DB.wr=await ck(sb.rpc('warroom',{s:sid,d1:j2i(p.y,p.m,1),d2:j2i(p.y,p.m,Math.min(+DB.wc.days||15,dim(p.m)))}));
  if(!LDI){LD=DB.lg.date;LDI=1}}
@@ -270,7 +270,7 @@ const presCard=(e,k)=>{const l=presLine(e,k);return l?`<div class="card"><h3>س�
 const shiftOf=(e,iso)=>{const x=DB.ts.find(r=>r.emp==e.id&&r.date==iso);return x?'شیفت '+x.shift+' · ':''};
 async function loadStk(){const s=curS(),d=tdy(),[it,cn]=await Promise.all([ck(sb.rpc('stocktake_items',{s:s.id,d})),ck(sb.from('stocktake_counts').select('code,counted,system_qty').eq('store_id',s.id).eq('count_date',d))]);STK={d,it,cn:Object.fromEntries(cn.map(x=>[x.code,x]))}}
 async function loadMov(){const s=curS(),t=tdy();MOV=await ck(sb.rpc('weekly_movers',{s:s.id,d1:addD(t,-7),d2:t}))}
-V_.stk=()=>{if(!STK)return'<div class="empty">در حال بارگذاری…</div>';if(!STK.it.length)return'<div class="empty">فهرست آیتم‌ها خالی است؛ اول اکسل موجودی را در تنظیمات وارد کنید</div>';const dn=STK.it.filter(x=>STK.cn[x.code]),bad=dn.filter(x=>STK.cn[x.code].counted!=STK.cn[x.code].system_qty);
+V_.stk0=()=>{if(!STK)return'<div class="empty">در حال بارگذاری…</div>';if(!STK.it.length)return'<div class="empty">فهرست آیتم‌ها خالی است؛ اول اکسل موجودی را در تنظیمات وارد کنید</div>';const dn=STK.it.filter(x=>STK.cn[x.code]),bad=dn.filter(x=>STK.cn[x.code].counted!=STK.cn[x.code].system_qty);
  return`<div class="sm" style="margin-bottom:8px">۱۰ آیتم تصادفی امروز · ${fmt(dn.length)} شمارش‌شده · ${fmt(bad.length)} مغایرت</div>`+STK.it.map(x=>{const c=STK.cn[x.code],ok=c&&c.counted==c.system_qty;return`<div class="card" style="margin-bottom:8px;${c?`border-color:${ok?'var(--g)':'var(--r)'};background:${ok?'rgba(46,125,91,.13)':'rgba(192,57,43,.10)'}`:''}"><b>${x.title}</b><div class="sm">کد ${x.code} · موجودی سیستم <b>${fmt(x.qty)}</b></div><div class="row" style="border:0;padding:0"><input id="sc_${x.code}" inputmode="numeric" placeholder="تعداد شمارش" value="${c?c.counted:''}" style="margin:6px 0"><button class="ln" data-a="stkSave" data-id="${x.code}" style="font-size:14px">ثبت</button></div>${c?(ok?'<span class="badge g">✓ بدون مغایرت</span>':`<span class="badge r">مغایرت ${fmt(c.counted-x.qty)}</span>`):''}</div>`}).join('')};
 V_.mov=()=>{if(!MOV)return'<div class="empty">در حال بارگذاری…</div>';const b=MOV.filter(x=>x.kind=='best'),w=MOV.filter(x=>x.kind=='worst'),row=(x,t)=>`<div class="row" style="display:block"><b>${x.model}</b> <span class="sm">${x.category}</span><div class="sm">فروش ۷ روز (همهٔ رنگ‌ها) ${fmt(x.sold)} · موجودی کل ${fmt(x.stock)} · نرخ فروش ${pc(x.sold/((x.sold+x.stock)||1))}${t=='b'&&x.stock<=3?' · <span style="color:var(--r)">⚠ نیاز به تأمین</span>':''}${t=='w'?' · پیشنهاد: ویترین یا جابجایی':''}</div></div>`;
  return`<div class="sm" style="margin-bottom:8px">فقط کیف، کفش، چمدان و ساک دستی؛ هر مدل با همهٔ رنگ‌ها و سایزهایش یک ردیف است (نیاز به ورود اکسل فروش دارد).</div><h4 style="margin:6px 0">🔥 ۱۰ مدل پرفروش</h4>${b.map(x=>row(x,'b')).join('')||'<div class="empty">فروش آیتمی ثبت نشده</div>'}<h4 style="margin:12px 0 6px">🐢 ۱۰ مدل کم‌فروش (موجودی زیاد، فروش کم)</h4>${w.map(x=>row(x,'w')).join('')||'<div class="empty">—</div>'}`};
@@ -432,7 +432,7 @@ V_.act=()=>{const open=DB.acts.filter(x=>x.status!='تکمیل'&&x.status!='لغ
 V_.gsales=()=>groupPage('sales',NAVC);V_.gwar=()=>groupPage('war',NAVC);
 V_.dash=()=>sloganCard()+taskBanner()+(U.role=='sales'?me():remind()+home(curS()));
 function home(s){const st=SLAST(s),stT=S(s),al_=alerts(s,st);
- return hdrCard(s,st)
+ return hdrCard(s,st)+copilot(s,st)
  +poster(s,st)
  +chartCard(s,st,null)
  +`<div class="card"><h3>📅 عملکرد روز</h3><div class="sm">جزئیات روز انتخاب‌شده؛ به‌صورت پیش‌فرض آخرین روز ثبت‌شده نمایش داده می‌شود.</div>${dayBody(s)}</div>`
@@ -481,7 +481,65 @@ V_.set=()=>{const c=DB.set,s=curS(),f=(l,k)=>`<label>${l}</label><input data-c="
   +accCard('s4','📥','فایل‌های اکسل و انتقال کالا','فروش، موجودی، تایم‌شیت، نات‌شو و خروج کالا',()=>V_.imp())
  +accCard('s6','📌','یادآوری وظایف پرسنل','روز هفته و وظیفهٔ هر نفر (مثلاً چیدمان نسا)',()=>taskBody())
  +accCard('s11','🩺','Store Health و Gap','وزن‌ها و آستانه‌ها',()=>`${f('وزن Target Achievement','hw_ach')}${f('وزن Pace','hw_pace')}${f('وزن Team Performance','hw_team')}${f('وزن Conversion','hw_conv')}${f('وزن UPT','hw_upt')}${f('وزن ATV','hw_atv')}${f('هدف ATV به ریال (۰ = از میانگین روزهای قبل)','atvT')}${f('Gap: حد سبز (نیاز روزانه ÷ میانگین)','gapA')}${f('Gap: حد زرد','gapB')}${f('Health: حداقل Excellent','hs_exc')}${f('Health: حداقل Healthy','hs_ok')}${f('Health: حداقل Attention','hs_att')}`)
+ +accCard('s7','📦','موجودی کالا','پاک‌کردن کل موجودی و ورود موجودی جدید',()=>invResetBody())
  +accCard('s5','👥','کاربران','ساخت، ریست رمز و غیرفعال‌کردن',()=>cardInner(usersCard()))};
+/* ===== v16: stocktake history, inventory reset, weekly report, daily copilot, team intelligence ===== */
+Object.assign(TL,{wrep:'گزارش هفتگی',tint:'Team Intelligence'});
+Object.assign(IC,{wrep:'🗞',tint:'🧠'});
+Object.assign(SUBT,{wrep:['گزارش هفتگی مدیر عملیات','مقایسه با هفته متناظر، رشد و افت، ۳ اولویت هفته بعد'],tint:['Team Performance Intelligence','نقطه قوت و ضعف هر نفر، روند، کوچینگ و نتیجه آن']});
+GRP.sales.k.push('wrep');GRP.team.k.push('tint');
+{const st=document.createElement('style');st.textContent='@media print{header,nav,.sb,.noprint,.acc-h{display:none!important}body{padding:0!important;background:#fff!important}.card{box-shadow:none!important;break-inside:avoid}}';document.head.appendChild(st)}
+const rng=(end,a,b)=>Array.from({length:b-a+1},(_,i)=>addD(end,-(a+i)));
+const wkK=ds=>{const k=K(DB.sales.filter(x=>ds.includes(x.date)));k.vis=DB.ff.filter(x=>ds.includes(x.date)).reduce((a,x)=>a+x.v,0);k.conv=k.vis?k.inv/k.vis*100:0;return k};
+const pctd=(a,b)=>b>0?(a-b)/b*100:null,dl=v=>v==null?'—':(v>=0?'▲ ':'▼ ')+fmt(Math.abs(v))+'٪';
+const recAll=()=>[...new Set(DB.sales.filter(x=>(x.sales>0||x.amt>0)&&x.date<=lastISO()).map(x=>x.date))].sort();
+// ---- stocktake history
+let STKH=null;
+V_.stk0=V_.stk0||V_.stk;
+V_.stk=()=>{let h=V_.stk0();if(!STKH)return h;const by={};STKH.forEach(r=>(by[r.count_date]=by[r.count_date]||[]).push(r));
+ const ds=Object.keys(by).sort().reverse();
+ return h+`<h4 style="margin:16px 0 6px">🗂 سابقه انبارگردانی</h4>`+(ds.map(d=>{const L=by[d],bad=L.filter(x=>x.counted!=x.system_qty);return accCard('sh'+d,bad.length?'🔴':'🟢',pdate(d),fmt(L.length)+' آیتم شمارش‌شده · '+fmt(bad.length)+' مغایرت',()=>L.map(x=>`<div class="row"><span><b>${x.title||x.code}</b><div class="sm">کد ${x.code} · سیستم ${fmt(x.system_qty)} · شمارش ${fmt(x.counted)}</div></span>${x.counted==x.system_qty?'<span class="badge g">✓</span>':`<span class="badge r">${fmt(x.counted-x.system_qty)}</span>`}</div>`).join(''))}).join('')||'<div class="empty">هنوز سابقه‌ای ثبت نشده</div>')};
+const _ls=loadStk;loadStk=async function(){await _ls();try{STKH=await ck(sb.from('stocktake_counts').select('count_date,code,title,system_qty,counted').eq('store_id',curS().id).order('count_date',{ascending:false}).limit(1500))}catch(e){STKH=[]}};
+// ---- per-person KPI
+const KL={ach:'تحقق تارگت فردی',ph:'آیتم به ازای ساعت حضور',upt:'UPT',atv:'ATV',cv:'نرخ تبدیل'},KD={ach:'تعیین هدف ساعتی و پیگیری لیدر در میانهٔ شیفت',ph:'مدیریت زمان فروش و همراهی مشتری در ساعات شلوغ',upt:'تمرین پیشنهاد مکمل (کیف پول با کیف، کمربند با کفش)',atv:'تمرین پیشنهاد ست کامل و آیتم با ارزش بالاتر',cv:'تمرین Greeting، Need Discovery و Closing'};
+const kv=(k,v)=>v==null?'—':k=='ach'?pc(v):k=='atv'?fR(v):k=='cv'?fmt(v)+'٪':fmt(v);
+const pk=(e,s,ds)=>{const k=K(DB.sales.filter(x=>x.emp==e.id&&ds.includes(x.date)));let t=0;ds.forEach(d=>{const q=pd(d);t+=eD(e,s,q.d,q.m)});const h=DB.ts.filter(x=>x.emp==e.id&&ds.includes(x.date)).reduce((a,x)=>a+x.hours,0);return{s:k.s,upt:k.inv?k.upt:null,atv:k.inv?k.atv:null,ach:t>0?k.s/t:null,ph:h>0?k.s/h:null,cv:k.vis>0?k.inv/k.vis*100:null}};
+V_.tint=()=>{const s=curS(),es=SL(s),ra=recAll(),cur=ra.slice(-7),prv=ra.slice(-14,-7),can=ENT();if(!cur.length)return'<div class="empty">داده‌ای ثبت نشده</div>';
+ const P=es.map(e=>({e,c:pk(e,s,cur),p:pk(e,s,prv)})),ks=Object.keys(KL),avg={};ks.forEach(k=>{const v=P.map(x=>x.c[k]).filter(x=>x!=null);avg[k]=v.length?v.reduce((a,b)=>a+b,0)/v.length:null});
+ let h=`<div class="sm" style="margin-bottom:8px">بازهٔ ${fmt(cur.length)} روز آخر ثبت‌شده در برابر ${fmt(prv.length)} روز قبل‌تر. منصفانه: تحقق نسبت به تارگت فردی (وزن و فرصت)، فروش به ازای ساعت حضور تایم‌شیت، و نرخ تبدیل بر پایهٔ مشتری سرویس‌داده سنجیده می‌شود؛ KPI بدون داده کنار گذاشته می‌شود.</div>`;
+ h+=`<div class="card"><h3>رتبه‌بندی بر اساس KPI</h3>${ks.map(k=>{const L=P.filter(x=>x.c[k]!=null).sort((a,b)=>b.c[k]-a.c[k]);return`<div style="margin-bottom:10px"><b>${KL[k]}</b>${L.map((x,i)=>`<div class="row" style="padding:4px 0"><span>${['🥇','🥈','🥉'][i]||fmt(i+1)} ${x.e.name}</span><b>${kv(k,x.c[k])}</b></div>`).join('')||'<div class="sm">داده کافی نیست</div>'}</div>`}).join('')}</div>`;
+ P.forEach(x=>{const r=ks.filter(k=>x.c[k]!=null&&avg[k]).map(k=>[k,x.c[k]/avg[k]]).sort((a,b)=>b[1]-a[1]),str=r[0],wk=r.length>1?r[r.length-1]:null,tr=x.c.ach!=null&&x.p.ach!=null?(x.c.ach-x.p.ach)*100:null,co=(DB.coach||[]).map((c,i)=>({...c,i})).filter(c=>c.e==x.e.id);
+  h+=`<div class="card"><b>${x.e.name}</b> ${tr==null?'':`<span class="badge ${tr>=3?'g':tr<=-3?'r':'y'}">${tr>=3?'رشد':tr<=-3?'افت':'ثابت'} ${fmt(Math.abs(tr))} واحد</span>`}
+<div class="sm" style="margin-top:6px">${ks.map(k=>KL[k]+': '+kv(k,x.c[k])).join(' · ')}</div>
+${str?`<div class="al" style="border-color:var(--g)">نقطه قوت: <b>${KL[str[0]]}</b> (${pc(str[1])} میانگین تیم)</div>`:''}
+${wk&&wk[1]<.95?`<div class="al" style="border-color:var(--y)">نیاز به کوچینگ: <b>${KL[wk[0]]}</b> (${pc(wk[1])} میانگین تیم)<br>تمرین پیشنهادی: ${KD[wk[0]]}${can?`<br><button class="ln" style="font-size:13px" data-a="coachAdd" data-id="${x.e.id}" data-k="${wk[0]}">＋ ثبت کوچینگ این هفته</button>`:''}</div>`:'<div class="sm">ضعف مشخصی نسبت به تیم دیده نشد ✓</div>'}
+${co.map(c=>{const now=x.c[c.k],old=c.d<=addD(tdy(),-7),dv=now!=null&&c.b!=null?now-c.b:null;return`<div class="row" style="display:block"><div class="sm">کوچینگ ${pdate(c.d)} · ${KL[c.k]} · مبنا ${kv(c.k,c.b)}</div>${old?`<div>نتیجه: ${kv(c.k,now)} ${dv==null?'':dv>0?'<span class="badge g">بهبود</span>':'<span class="badge r">بدون بهبود</span>'}</div>`:'<div class="sm">نتیجه را از هفتهٔ بعد ببینید</div>'}${can?`<button class="ln" style="font-size:12px" data-a="coachDel" data-i="${c.i}">حذف</button>`:''}</div>`}).join('')}</div>`});
+ return h};
+// ---- weekly report
+function rptData(){const s=curS(),sl=SLAST(s),end=sl.iso,w1=rng(end,0,6),w0=rng(end,7,13),c=wkK(w1),p=wkK(w0),it=[];
+ [['آیتم فروخته‌شده','s'],['فروش ریالی','amt'],['فاکتور','inv'],['UPT','upt'],['ATV','atv'],['Conversion','conv']].forEach(([l,k])=>{const d=pctd(c[k],p[k]);if(d!=null)it.push({l,c:c[k],p:p[k],d})});
+ const sum=(ds,f)=>DB.sales.filter(x=>ds.includes(x.date)).reduce((a,x)=>a+f(x),0),ex=[];
+ SL(s).forEach(e=>{const a=sum(w1,x=>x.emp==e.id?x.sales:0),b=sum(w0,x=>x.emp==e.id?x.sales:0);if(Math.max(a,b)>=5&&b>0)ex.push({l:e.name,c:a,p:b,d:pctd(a,b)})});
+ CATS.forEach(cn=>{const a=sum(w1,x=>(x.it&&x.it[cn])||0),b=sum(w0,x=>(x.it&&x.it[cn])||0);if(Math.max(a,b)>=5&&b>0)ex.push({l:cn,c:a,p:b,d:pctd(a,b)})});
+ const all=it.concat(ex),ups=all.filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,3),downs=all.filter(x=>x.d<0).sort((a,b)=>a.d-b.d).slice(0,3),
+ team=SL(s).map(e=>({e,w:ewOf(e,s,sl)})),done=DB.acts.filter(x=>x.status=='تکمیل'),act=DB.acts.filter(x=>x.status!='تکمیل'&&x.status!='لغو'),pri=diagnose(s,sl).slice(0,3);
+ return{s,end,w1,w0,c,p,it,ups,downs,team,done,act,pri}}
+const rptText=r=>{const f=x=>`${x.l}: ${dl(x.d)} (${fmt(x.p)} ← ${fmt(x.c)})`,T=['ON TRACK','ATTENTION','ACTION REQUIRED'];
+ return`گزارش هفتگی ${r.s.name}\n${pdate(r.w1[6])} تا ${pdate(r.end)}\n\nعملکرد هفته در برابر هفته قبل:\n${r.it.map(f).join('\n')}\n\nرشدها:\n${r.ups.map(f).join('\n')||'—'}\n\nافت‌ها:\n${r.downs.map(f).join('\n')||'—'}\n\nوضعیت تیم:\n${r.team.map(x=>x.e.name+': '+T[x.w.lvl]+' · '+x.w.txt).join('\n')}\n\nاقدامات: ${fmt(r.done.length)} تکمیل‌شده، ${fmt(r.act.length)} فعال\n\n۳ اولویت هفته آینده:\n${r.pri.map((x,i)=>(i+1)+'. '+x.title+' — '+x.action).join('\n')||'—'}`};
+V_.wrep=()=>{if(!DB.sales.length)return'<div class="empty">داده‌ای ثبت نشده</div>';const r=rptData(),row=x=>`<div class="row"><span>${x.l}</span><span class="sm">${fmt(x.p)} ← <b>${fmt(x.c)}</b> · ${dl(x.d)}</span></div>`;
+ return`<div class="card"><h3>گزارش هفتگی · ${r.s.name}</h3><div class="sm">${pdate(r.w1[6])} تا ${pdate(r.end)} در برابر ${pdate(r.w0[6])} تا ${pdate(r.w0[0])}</div><div class="noprint" style="display:flex;gap:8px;margin-top:10px"><button class="btn" data-a="rptShare">اشتراک‌گذاری</button><button class="btn" data-a="rptPdf">PDF / چاپ</button></div></div>
+<div class="card"><h3>عملکرد در مقایسه با هفته متناظر</h3>${r.it.map(row).join('')||'<div class="empty">—</div>'}</div>
+<div class="card"><h3>مهم‌ترین رشدها</h3>${r.ups.map(row).join('')||'<div class="sm">رشد قابل‌توجهی نبود</div>'}<h3 style="margin-top:12px">مهم‌ترین افت‌ها</h3>${r.downs.map(row).join('')||'<div class="sm">افت قابل‌توجهی نبود ✓</div>'}</div>
+<div class="card"><h3>وضعیت تیم و اقدامات</h3>${r.team.map(x=>`<div class="row"><b>${x.e.name}</b>${ewBadge(x.w)}</div>`).join('')}<div class="sm" style="margin-top:8px">اکشن‌پلن: ${fmt(r.done.length)} تکمیل‌شده · ${fmt(r.act.length)} فعال</div>${r.done.slice(-5).map(x=>`<div class="sm">✓ ${x.problem}: ${x.action}</div>`).join('')}</div>
+<div class="card"><h3>۳ اولویت پیشنهادی هفته آینده</h3>${r.pri.map((x,i)=>`<div class="row" style="display:block"><b>${i+1}. ${x.title}</b><div class="sm">${x.why}</div><div>${x.action}</div></div>`).join('')||'<div class="sm">اولویت بحرانی وجود ندارد ✓</div>'}</div>`};
+// ---- daily copilot
+const copilot=(s,st)=>{if(!DB.sales.length)return'';const iso=st.iso,a=K(DB.sales.filter(x=>x.date==iso)),b=K(DB.sales.filter(x=>x.date==addD(iso,-7))),c=wkK(rng(iso,0,6)),p=wkK(rng(iso,7,13)),iss=diagnose(s,st).slice(0,3);
+ return`<div class="card" ${GB}><div style="font-size:11px;opacity:.8;letter-spacing:1px">DAILY COPILOT · مدیر هوشمند</div><div style="margin-top:6px">آخرین روز (${pdate(iso)}) نسبت به همان روز هفتهٔ قبل: <b>${dl(pctd(a.s,b.s))}</b> آیتم</div><div>۷ روز اخیر نسبت به ۷ روز قبل‌تر: <b>${dl(pctd(c.s,p.s))}</b> آیتم · <b>${dl(pctd(c.amt,p.amt))}</b> ریال</div><div style="margin-top:8px;font-weight:700">${iss.length?'مانع اصلی تارگت: '+iss[0].title+' — '+iss[0].why:'KPI مانع مهمی دیده نمی‌شود ✓'}</div>${iss.length?`<div style="margin-top:8px;font-weight:700">امروز روی این ${fmt(iss.length)} کار تمرکز کن:</div>${iss.map((x,i)=>`<div style="margin-top:4px">${fmt(i+1)}. ${x.action}</div>`).join('')}`:''}</div>`};
+// ---- settings: inventory reset
+const invResetBody=()=>`<div class="sm">با «پاک‌کردن کل موجودی» فهرست آیتم‌ها و موجودی همهٔ دسته‌ها صفر می‌شود؛ بعد اکسل موجودی جدید را وارد کنید. (سابقهٔ فروش و انبارگردانی حفظ می‌شود.)</div><button class="btn" style="margin:10px 0;background:#a93226" data-a="invReset">پاک‌کردن کل موجودی</button><hr style="border:0;border-top:1px solid var(--line);margin:10px 0">${imvBody()}`;
+
+async function coachSave(L){try{await ck(sb.from('app_settings').upsert({store_id:curS().id,key:'coaching',value:L}));await load()}catch(e){alert(e.message)}render()}
+
 function login(){return`<main><div class="card" style="margin-top:40px"><div class="logo">RETAIL PULSE</div><div class="sub">Retail Performance & Operations Platform</div><br><label>نام کاربری</label><input id="l_u" autocapitalize="off" autocomplete="username" placeholder="مثلاً ehsan yekta"><label>رمز</label><input id="l_p" type="password"><div class="err">${ERR}</div><button class="btn" data-a="login">ورود</button><p class="sm">نام کاربری و رمز را از مدیر فروشگاه بگیرید. (نسخه v15) بعد از ورود می‌توانید رمزتان را عوض کنید.</p></div></main>`}
  function render(){const a=$('app');if(!U){a.innerHTML=login();return}const nav=NAV[U.role].concat(ADM()?['set']:[]);NAVC=nav;if(!nav.includes(V)&&!isG(V))V=nav[0];
  a.innerHTML=`<header><div><div class="logo">RETAIL PULSE</div><div class="sub">${U.name} · ${R[U.role]} · ${ADM()?'دسترسی کامل':ENT()?'ثبت اطلاعات':'فقط مشاهده'} · v15</div></div><button class="ln" style="font-size:13px" data-a="out">خروج</button></header><main>${V_[V]()}</main><nav>${navHtml(nav)}</nav>`}
@@ -568,7 +626,13 @@ async stf(t){const s=curS(),f=t.dataset.f;try{if(f=='target'){const n=N(t.value)
 async stk(t){const n=N(t.value),c=CATS[+t.dataset.i];if(isNaN(n)||n<0||n%1)return render();const d=n-stock(c);try{if(d)await ck(sb.from('inventory_movements').insert({store_id:curS().id,category_id:CATID[c],qty:d,kind:'adjustment'}));await load()}catch(e){alert(e.message)}render()},
 async pw(t){const v=D(t.value);if(v.length<6){alert('رمز باید حداقل ۶ کاراکتر باشد');return render()}const r=await sb.auth.updateUser({password:v});t.value='';alert(r.error?'تغییر رمز نشد: '+r.error.message:'رمز تغییر کرد')}
 };
-const OA=['login','out','go','lt','pr','rc','dr','drx','acc','tg','stkSave'],OC=['pw','pd','se','re','hm'],AA=['uNew','uReset','uTog','wrSave','impGo','taskAdd','taskDel','imvGo','tsGo','nsiGo','trGo','trxGo'],AC=['emf','setv','stf','impf','imvf','tsf','nsif','trxf'];
+const OA=['login','rptShare','rptPdf','out','go','lt','pr','rc','dr','drx','acc','tg','stkSave'],OC=['pw','pd','se','re','hm'],AA=['invReset','uNew','uReset','uTog','wrSave','impGo','taskAdd','taskDel','imvGo','tsGo','nsiGo','trGo','trxGo'],AC=['emf','setv','stf','impf','imvf','tsf','nsif','trxf'];
+Object.assign(A,{
+async invReset(){const s=curS();if(!confirm('کل موجودی پاک شود؟ این کار برگشت‌پذیر نیست.')||!confirm('تأیید نهایی: همهٔ آیتم‌ها و موجودی دسته‌ها صفر می‌شود.'))return;try{await ck(sb.from('inventory_items').delete().eq('store_id',s.id));const mv=CATS.filter(c=>CATID[c]&&stock(c)!==0).map(c=>({store_id:s.id,category_id:CATID[c],qty:-stock(c),kind:'adjustment'}));if(mv.length)await ck(sb.from('inventory_movements').insert(mv));IMV=null;IMM2='✓ کل موجودی پاک شد؛ اکسل جدید را وارد کنید';await load()}catch(e){IMM2='خطا: '+e.message}render()},
+async coachAdd(d){const s=curS(),e=DB.emps.find(x=>x.id==d.id);if(!e)return;const b=pk(e,s,recAll().slice(-7))[d.k];await coachSave([...(DB.coach||[]),{e:e.id,d:tdy(),k:d.k,b}])},
+async coachDel(d){await coachSave((DB.coach||[]).filter((_,i)=>i!=+d.i))},
+rptShare(){const t=rptText(rptData());if(navigator.share)navigator.share({title:'گزارش هفتگی',text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>alert('متن گزارش کپی شد'));else alert(t)},
+rptPdf(){window.print()}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-a]'),a=t&&t.dataset.a;if(a&&A[a]&&(OA.includes(a)||(AA.includes(a)?ADM():ENT())))A[a](t.dataset)});
 document.addEventListener('change',e=>{const t=e.target.closest('[data-c]'),c=t&&t.dataset.c;if(c&&C[c]&&(OC.includes(c)||(AC.includes(c)?ADM():ENT())))C[c](t)});
 document.addEventListener('input',e=>{const t=e.target;if(t.id=='ns_q'){NQ=t.value;$('ns_l').innerHTML=nsRows()}else if(t.id&&t.id.startsWith('sq_')){const ctx=t.dataset.ctx;clearTimeout(SQT);SQT=setTimeout(async()=>{const q=t.value.trim(),box=$('sr_'+ctx);if(q.length<2){SRCH[ctx]=[];if(box)box.innerHTML='';return}try{SRCH[ctx]=await ck(sb.rpc('item_search',{s:curS().id,q}));if(box)box.innerHTML=srRows(ctx)||'<div class="sm" style="margin:6px 0">موردی پیدا نشد</div>'}catch(er){if(box)box.innerHTML='<div class="err">'+er.message+'</div>'}},250)}else if(t.classList&&t.classList.contains('sdq')){const i=+t.dataset.i;if(SDR[i])SDR[i].qty=N(t.value)}});
