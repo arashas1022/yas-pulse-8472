@@ -66,7 +66,7 @@ body{background:radial-gradient(1000px 420px at 85% -140px,rgba(217,178,111,.26)
 ::selection{background:rgba(217,178,111,.4)}
 header{padding:12px 18px;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px)}
 .logo{font-weight:800;letter-spacing:3px;font-size:15px;background:linear-gradient(90deg,var(--ink),var(--gold2) 60%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
-.card{border:1px solid color-mix(in srgb,var(--line) 80%,transparent);border-radius:20px;padding:16px;box-shadow:var(--shadow);animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+.card{border:1px solid color-mix(in srgb,var(--line) 80%,transparent);border-radius:20px;padding:16px;box-shadow:var(--shadow);animation:none}
 main>*:nth-child(2){animation-delay:.04s}main>*:nth-child(3){animation-delay:.08s}main>*:nth-child(4){animation-delay:.12s}main>*:nth-child(n+5){animation-delay:.16s}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 h3{font-size:15.5px;border-inline-start:0;padding-inline-start:12px;position:relative}
@@ -99,7 +99,17 @@ input:focus,select:focus,textarea:focus{outline:0;border-color:var(--gold);box-s
 @media (min-width:1000px){nav button{border-radius:12px;margin:2px 10px}nav button.on{box-shadow:inset 3px 0 var(--gold)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
-</head><body><div id="app"></div>
+<style id="v18">
+body{background:var(--bg)!important}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(520px 440px at 12% 8%,rgba(217,178,111,.38),transparent 70%),radial-gradient(540px 480px at 92% 38%,rgba(43,108,176,.24),transparent 70%),radial-gradient(540px 480px at 25% 96%,rgba(46,125,91,.22),transparent 70%)}
+.card,.k,.dsh{background:color-mix(in srgb,var(--card) 55%,transparent);-webkit-backdrop-filter:blur(24px) saturate(1.8);backdrop-filter:blur(24px) saturate(1.8);border:1px solid rgba(255,255,255,.4);box-shadow:0 8px 32px rgba(40,30,15,.1),inset 0 1px 0 rgba(255,255,255,.5)}
+.k{background:color-mix(in srgb,var(--card) 40%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.acc-b>.card{background:transparent;backdrop-filter:none;box-shadow:none}
+header{background:color-mix(in srgb,var(--bg) 45%,transparent)!important;-webkit-backdrop-filter:blur(28px) saturate(2)!important;backdrop-filter:blur(28px) saturate(2)!important}
+input,select,textarea{background:color-mix(in srgb,var(--bg) 55%,transparent)}
+@media (max-width:999px){nav{background:color-mix(in srgb,var(--card) 42%,transparent)!important;-webkit-backdrop-filter:blur(32px) saturate(2.1)!important;backdrop-filter:blur(32px) saturate(2.1)!important;border:1px solid rgba(255,255,255,.4)!important;box-shadow:0 12px 40px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.55)!important}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card,:root:not([data-theme="light"]) .k,:root:not([data-theme="light"]) .dsh{border-color:rgba(255,255,255,.09);box-shadow:0 8px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}}
+</style></head><body><div id="app"></div>
 <script>
 const $=i=>document.getElementById(i);
 const N=s=>parseFloat(String(s).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[٫,]/g,'.'));
@@ -158,7 +168,7 @@ async function load(){
   acts:ap.map(x=>({id:x.id,store:sid,problem:x.problem,cause:x.root_cause||'',action:x.action,owner:x.owner||'',due:x.due||'',status:SFA[x.status]})),
   set:{low:th.low??3,weak:th.weak??.5,yel:th.yellow??.85,upt:th.upt??1.3,conv:th.conv??5,wa:an.wa??50,wu:an.wu??30,wc:an.wc??20,cp:g.checkpoint_day??15,minp:g.min_pct??50,prize:g.prize_positions??3},
   lg:{date:sn[0]?sn[0].snap_date:tdy(),rows:pa.map(x=>{const q=sn.find(y=>y.participant_id==x.id);return{id:x.id,n:x.name,p:q?+q.achievement_pct:0,me:x.is_us}})},
-  stk:Object.fromEntries(sk.map(x=>[x.category_id,x.qty])),wc:(as.find(x=>x.key=='warroom')||{}).value||null,tasks:(as.find(x=>x.key=='tasks')||{}).value||DEFT,coach:(as.find(x=>x.key=='coaching')||{}).value||[],acc:(as.find(x=>x.key=='access')||{}).value||{},rost:ro,ff:ff.map(x=>({date:x.entry_date,v:x.visitors})),ts:(ts||[]).map(x=>({emp:x.employee_id,date:x.work_date,shift:x.shift,hours:+x.hours}))};
+  stk:Object.fromEntries(sk.map(x=>[x.category_id,x.qty])),wc:(as.find(x=>x.key=='warroom')||{}).value||null,tasks:(as.find(x=>x.key=='tasks')||{}).value||DEFT,coach:(as.find(x=>x.key=='coaching')||{}).value||[],acc:(as.find(x=>x.key=='access')||{}).value||{},pay:(as.find(x=>x.key=='payroll')||{}).value||{},rost:ro,ff:ff.map(x=>({date:x.entry_date,v:x.visitors})),ts:(ts||[]).map(x=>({emp:x.employee_id,date:x.work_date,shift:x.shift,hours:+x.hours}))};
  {const hl=(as.find(x=>x.key=='health')||{}).value||{};Object.assign(DB.set,{hw_ach:hl.hw_ach??30,hw_pace:hl.hw_pace??20,hw_team:hl.hw_team??15,hw_conv:hl.hw_conv??15,hw_upt:hl.hw_upt??10,hw_atv:hl.hw_atv??10,atvT:hl.atvT??0,gapA:hl.gapA??1.1,gapB:hl.gapB??1.35,hs_exc:hl.hs_exc??85,hs_ok:hl.hs_ok??70,hs_att:hl.hs_att??50})}
  DB.wr=[];if(DB.wc&&DB.wc.ym==p.y+'-'+p.m)DB.wr=await ck(sb.rpc('warroom',{s:sid,d1:j2i(p.y,p.m,1),d2:j2i(p.y,p.m,Math.min(+DB.wc.days||15,dim(p.m)))}));
  if(!LDI){LD=DB.lg.date;LDI=1}}
@@ -263,7 +273,7 @@ let DR='',TPD='',DPD='',TGO=false;
 let NAVC=[],ACC={sales:'',war:'',team:''};const isG=v=>v=='gsales'||v=='gwar'||v=='gteam';
 const GRP={sales:{t:'فروش و موجودی',i:'💰',k:['sales','inv','srisk','lrisk','mov','stk','rs','hist']},team:{t:'تیم',i:'👥',k:['tperf','tweak','tew','tcoach','ttrend']},war:{t:'اتاق جنگ و لیگ',i:'🏆',k:['war','lg','drank','tprog']}};
 const SUBT={tperf:['Performance','پروفایل عملکرد هر فروشنده'],tmvp:['Daily MVP','پوستر عملکرد و MVP روز'],tweak:['Weak Performance','عملکرد ضعیف آخرین روز'],tew:['Early Warning','هشدار زودهنگام هر نفر'],tcoach:['Coaching','پیشنهاد Coaching و Action'],ttrend:['Team Trends','روند ۷ روز اخیر تیم'],srisk:['Stock Risk','دسته‌های پرفروش با موجودی کم'],lrisk:['Lost Sale Risk','کالاهای فروخته‌شده با موجودی صفر'],drank:['Daily Ranking','رتبهٔ روز بر اساس تحقق تارگت'],tprog:['Target Progress','پیشرفت تارگت فروشگاه و پرسنل'],sales:['ثبت و گزارش فروش','فروش روزانه، ورودی فروشگاه، گزارش روز'],inv:['موجودی و نات شو','موجودی لحظه‌ای و جستجوی نات شو'],rs:['دلایل عدم فروش','ثبت و آمار دلایل'],hist:['ماه‌های قبل','عملکرد ماه‌های گذشته'],war:['اتاق جنگ','عملیات، MVP و جدول روزانه'],lg:['لیگ فروش','رتبهٔ ما در گروه'],stk:['انبارگردانی روزانه','۱۰ آیتم تصادفی برای شمارش و تطبیق'],mov:['Product Performance','۱۰ مدل پرفروش و ۱۰ مدل کم‌فروش هفته'],act:['اکشن‌پلن','تحلیل و مدیریت اکشن‌پلن']};
-const navItems=nav=>{const o=[];['dash'].forEach(k=>nav.includes(k)&&o.push({id:k,t:TL[k],i:IC[k]}));Object.entries(GRP).forEach(([g,x])=>{const ks=x.k.filter(k=>nav.includes(k));if(ks.length==1)o.push({id:ks[0],t:TL[ks[0]],i:IC[ks[0]]});else if(ks.length)o.push({id:g,g:1,t:x.t,i:x.i})});['act','set'].forEach(k=>nav.includes(k)&&o.push({id:k,t:TL[k],i:IC[k]}));return o};
+const navItems=nav=>{const o=[];['dash'].forEach(k=>nav.includes(k)&&o.push({id:k,t:TL[k],i:IC[k]}));Object.entries(GRP).forEach(([g,x])=>{const ks=x.k.filter(k=>nav.includes(k));if(ks.length==1)o.push({id:ks[0],t:TL[ks[0]],i:IC[ks[0]]});else if(ks.length)o.push({id:g,g:1,t:x.t,i:x.i})});['act','pay','set'].forEach(k=>nav.includes(k)&&o.push({id:k,t:TL[k],i:IC[k]}));return o};
 const navHtml=nav=>navItems(nav).map(x=>{const on=x.g?V=='g'+x.id:x.id==V;return`<button class="${on?'on':''}" data-a="go" data-id="${x.g?'g'+x.id:x.id}"><span style="font-size:20px;display:block;line-height:1.3">${x.i}</span>${x.t}</button>`}).join('');
 const subBar=nav=>{const g=Object.keys(GRP).find(x=>GRP[x].k.includes(V));if(!g)return'';const ks=GRP[g].k.filter(k=>nav.includes(k));return ks.length>1?`<div class="sb"><button class="sbk" data-a="dr" data-id="${g}">→ ${GRP[g].t}</button>${ks.map(k=>`<button class="ch ${k==V?'on':''}" data-a="go" data-id="${k}">${TL[k]}</button>`).join('')}</div>`:''};
 
@@ -469,7 +479,7 @@ const pw=()=>`<div class="card"><h3>تغییر رمز من</h3><input type="pass
 
 V_.act=()=>{const open=DB.acts.filter(x=>x.status!='تکمیل'&&x.status!='لغو').length,doing=DB.acts.filter(x=>x.status=='در حال انجام').length,done=DB.acts.filter(x=>x.status=='تکمیل').length,late=DB.acts.filter(x=>x.status!='تکمیل'&&x.status!='لغو'&&x.due&&x.due<tdy()).length,s=curS(),sl=SLAST(s);return `<div class="card"><h3>اکشن‌پلن فروشگاه</h3><div class="sm">اولویت‌ها را انتخاب کن، اقدام مشخص بساز و وضعیت را پیگیری کن.</div><div class="grid">${kc('اقدام فعال',fmt(open))}${kc('در حال انجام',fmt(doing))}${kc('تکمیل‌شده',fmt(done))}${kc('عقب‌افتاده',fmt(late))}</div></div>`+accCard('act-analysis','📊','تحلیل عملکرد و اولویت‌های پیشنهادی','فاصله تا تارگت، سلامت فروشگاه و حداکثر ۳ اولویت',()=>healthCard(s,sl)+gapCard(s,sl)+briefCard(s,sl))+V_.actBase()};
 V_.gsales=()=>groupPage('sales',NAVC);V_.gwar=()=>groupPage('war',NAVC);
-V_.dash=()=>sloganCard()+taskBanner()+(U.role=='sales'?me():remind()+home(curS()));
+V_.dash=()=>sloganCard()+monthPoster()+taskBanner()+(U.role=='sales'?me():remind()+home(curS()));
 function home(s){const st=SLAST(s),stT=S(s),al_=alerts(s,st);
  return hdrCard(s,st)
  +poster(s,st)
@@ -520,6 +530,7 @@ V_.set=()=>{const c=DB.set,s=curS(),f=(l,k)=>`<label>${l}</label><input data-c="
   +accCard('s4','📥','فایل‌های اکسل و انتقال کالا','فروش، موجودی، تایم‌شیت، نات‌شو و خروج کالا',()=>V_.imp())
  +accCard('s6','📌','یادآوری وظایف پرسنل','روز هفته و وظیفهٔ هر نفر (مثلاً چیدمان نسا)',()=>taskBody())
  +accCard('s11','🩺','Store Health و Gap','وزن‌ها و آستانه‌ها',()=>`${f('وزن Target Achievement','hw_ach')}${f('وزن Pace','hw_pace')}${f('وزن Team Performance','hw_team')}${f('وزن Conversion','hw_conv')}${f('وزن UPT','hw_upt')}${f('وزن ATV','hw_atv')}${f('هدف ATV به ریال (۰ = از میانگین روزهای قبل)','atvT')}${f('Gap: حد سبز (نیاز روزانه ÷ میانگین)','gapA')}${f('Gap: حد زرد','gapB')}${f('Health: حداقل Excellent','hs_exc')}${f('Health: حداقل Healthy','hs_ok')}${f('Health: حداقل Attention','hs_att')}`)
+ +accCard('s9','💵','حقوق و دستمزد','نوع دورهٔ پاداش تارگت',()=>`<label>نوع دوره (برای پاداش تحقق تارگت مدیر و دستیار)</label><select data-c="payclr"><option value="0" ${(DB.pay||{}).clr?'':'selected'}>عادی (غیر حراج)</option><option value="1" ${(DB.pay||{}).clr?'selected':''}>حراج</option></select>`)
  +accCard('s8','🔐','دسترسی‌ها','تعیین صفحه‌هایی که هر فرد می‌بیند',()=>accBody())
  +accCard('s7','📦','موجودی کالا','پاک‌کردن کل موجودی و ورود موجودی جدید',()=>invResetBody())
  +accCard('s5','👥','کاربران','ساخت، ریست رمز و غیرفعال‌کردن',()=>cardInner(usersCard()))};
@@ -586,13 +597,14 @@ const AW=()=>ENT()||!!(U&&U.role=='sales'),NSW=()=>ENT()||!!(U&&U.x&&U.x.ns);
 const XA=a=>!!U&&((U.role=='sales'&&a=='addAct')||(!!(U.x&&U.x.ns)&&['nsAdd','nsDel','nsDelAll','pick'].includes(a)));
 function applyXP(me,user){const ks=[ekey(me?me.name:''),ekey(String(user.email||'').split('@')[0])],X=XP.find(p=>ks.some(k=>k.startsWith(p.k)));if(!X)return;if(X.adm){U.lvl='adm';U.role='mgr'}if(X.xn)U.xn=X.xn;if(X.ns)U.x={ns:1}}
 function login(){return`<main><div class="card" style="margin-top:40px"><div class="logo">RETAIL PULSE</div><div class="sub">Retail Performance & Operations Platform</div><br><label>نام کاربری</label><input id="l_u" autocapitalize="off" autocomplete="username" placeholder="مثلاً ehsan yekta"><label>رمز</label><input id="l_p" type="password"><div class="err">${ERR}</div><button class="btn" data-a="login">ورود</button><p class="sm">نام کاربری و رمز را از مدیر فروشگاه بگیرید. (نسخه v15) بعد از ورود می‌توانید رمزتان را عوض کنید.</p></div></main>`}
- function render(){const a=$('app');if(!U){a.innerHTML=login();return}const ac=!ADM()&&U.emp?DB.acc[U.emp]:null,nav=ac?['dash',...ac.filter(k=>k!='dash'&&k!='set'&&k!='imp')]:[...new Set(NAV[U.role].concat(U.xn||[],ADM()?['set']:[]))];NAVC=nav;if(!nav.includes(V)&&!isG(V))V=nav[0];
+ function render0(){const a=$('app');if(!U){a.innerHTML=login();return}const ac=!ADM()&&U.emp?DB.acc[U.emp]:null,nav=ac?['dash',...ac.filter(k=>k!='dash'&&k!='set'&&k!='imp')]:[...new Set(NAV[U.role].concat(U.xn||[],ADM()?['set']:[]))];nav.includes('pay')||nav.push('pay');NAVC=nav;if(!nav.includes(V)&&!isG(V))V=nav[0];
  a.innerHTML=`<header><div><div class="logo">RETAIL PULSE</div><div class="sub">${U.name} · ${R[U.role]} · ${ADM()?'دسترسی کامل':ENT()?'ثبت اطلاعات':'فقط مشاهده'} · v15</div></div><button class="ln" style="font-size:13px" data-a="out">خروج</button></header><main>${V_[V]()}</main><nav>${navHtml(nav)}</nav>`}
+function render(){const a=$('app'),y=window.scrollY;a.style.minHeight=a.offsetHeight+'px';render0();window.scrollTo(0,y);requestAnimationFrame(()=>a.style.minHeight='')}
 const A={
 dr(d){DR=DR==d.id?'':d.id;render()},drx(){DR='';render()},
 async login(){const un=$('l_u').value,p=D($('l_p').value);let r=await sb.auth.signInWithPassword({email:em(un),password:p});if(r.error)r=await sb.auth.signInWithPassword({email:em(un),password:p+'-rp'});if(r.error){ERR='نام کاربری یا رمز نادرست است';return render()}try{await start();ERR=''}catch(e){ERR=e.message;await sb.auth.signOut();U=null}render()},
 out(){CH&&sb.removeChannel(CH);CH=null;sb.auth.signOut();U=null;render()},
-go(d){V=d.id;ERR='';DR='';try{history.pushState({v:V},'')}catch(e){}render();if(V=='set'&&ADM())loadUsers().then(()=>{if(!editing())render()});if(V=='hist')loadHist().then(()=>{if(!editing())render()}).catch(()=>{});refresh()},lt(d){LT=d.id;render()},pr(d){PR=d.id;render()},
+go(d){V=d.id;ERR='';DR='';try{history.pushState({v:V},'')}catch(e){}render();window.scrollTo(0,0);if(V=='set'&&ADM())loadUsers().then(()=>{if(!editing())render()});if(V=='hist')loadHist().then(()=>{if(!editing())render()}).catch(()=>{});refresh()},lt(d){LT=d.id;render()},pr(d){PR=d.id;render()},
 async saveSale(){const s=curS(),eid=SE==='S'?0:(SE||SL(s)[0].id),date=SD,a=NA($('f_a').value||0),inv=N($('f_i').value||0),vis=N($('f_v').value||0),mps=$('f_p').value.trim(),mp=mps===''?null:N(mps),r=DB.sales.find(x=>x.store==s.id&&x.date==date&&x.emp==eid),it={...(r&&r.it||{})};
  let bad=mp!==null&&(isNaN(mp)||mp<0||mp%1),p=r?r.sales:0;
  if(SDR.length){SDR.forEach(x=>{if(!(x.qty>0)||x.qty%1)bad=1;if(x.category)it[x.category]=(it[x.category]||0)+x.qty;p+=x.qty})}else if(mp!==null)p=mp;
@@ -671,7 +683,7 @@ async stf(t){const s=curS(),f=t.dataset.f;try{if(f=='target'){const n=N(t.value)
 async stk(t){const n=N(t.value),c=CATS[+t.dataset.i];if(isNaN(n)||n<0||n%1)return render();const d=n-stock(c);try{if(d)await ck(sb.from('inventory_movements').insert({store_id:curS().id,category_id:CATID[c],qty:d,kind:'adjustment'}));await load()}catch(e){alert(e.message)}render()},
 async pw(t){const v=D(t.value);if(v.length<6){alert('رمز باید حداقل ۶ کاراکتر باشد');return render()}const r=await sb.auth.updateUser({password:v});t.value='';alert(r.error?'تغییر رمز نشد: '+r.error.message:'رمز تغییر کرد')}
 };
-const OA=['login','rptShare','rptPdf','out','go','lt','pr','rc','dr','drx','acc','tg','stkSave'],OC=['pw','pd','se','re','hm'],AA=['accReset','invReset','uNew','uReset','uTog','wrSave','impGo','taskAdd','taskDel','imvGo','tsGo','nsiGo','trGo','trxGo'],AC=['accx','emf','setv','stf','impf','imvf','tsf','nsif','trxf'];
+const OA=['login','rptShare','rptPdf','out','go','lt','pr','rc','dr','drx','acc','tg','stkSave'],OC=['pw','pd','se','re','hm'],AA=['accReset','invReset','uNew','uReset','uTog','wrSave','impGo','taskAdd','taskDel','imvGo','tsGo','nsiGo','trGo','trxGo'],AC=['payclr','accx','emf','setv','stf','impf','imvf','tsf','nsif','trxf'];
 Object.assign(A,{
 async invReset(){const s=curS();if(!confirm('کل موجودی پاک شود؟ این کار برگشت‌پذیر نیست.')||!confirm('تأیید نهایی: همهٔ آیتم‌ها و موجودی دسته‌ها صفر می‌شود.'))return;try{await ck(sb.from('inventory_items').delete().eq('store_id',s.id));const mv=CATS.filter(c=>CATID[c]&&stock(c)!==0).map(c=>({store_id:s.id,category_id:CATID[c],qty:-stock(c),kind:'adjustment'}));if(mv.length)await ck(sb.from('inventory_movements').insert(mv));IMV=null;IMM2='✓ کل موجودی پاک شد؛ اکسل جدید را وارد کنید';await load()}catch(e){IMM2='خطا: '+e.message}render()},
 async coachAdd(d){const s=curS(),e=DB.emps.find(x=>x.id==d.id);if(!e)return;const b=pk(e,s,recAll().slice(-7))[d.k];await coachSave([...(DB.coach||[]),{e:e.id,d:tdy(),k:d.k,b}])},
@@ -687,6 +699,31 @@ const accBody=()=>{const es=DB.emps.filter(e=>!ekey(e.name).startsWith('ehsan'))
 async function accSave(o){try{await ck(sb.from('app_settings').upsert({store_id:curS().id,key:'access',value:o}));await load()}catch(e){alert(e.message)}render()}
 Object.assign(C,{accx(t){const e=DB.emps.find(x=>x.id==t.dataset.id);if(!e)return;const k=t.dataset.k,l=new Set(accCur(e));t.checked?l.add(k):l.delete(k);accSave({...DB.acc,[e.id]:[...l]})}});
 Object.assign(A,{accReset(d){const o={...DB.acc};delete o[d.id];accSave(o)}});
+/* ===== v18: payslip + month-end poster ===== */
+Object.assign(TL,{pay:'فیش حقوقی'});Object.assign(IC,{pay:'💵'});
+const PAY=[{k:'arash',t:'mgr',base:238e6,pos:80e6,title:'مدیر فروشگاه'},{k:'ehsan',t:'asst',base:210e6,pos:60e6,title:'دستیار مدیر فروشگاه'},{k:'morteza',t:'staff',base:210e6,pos:60e6,title:'سوپروایزر کالا'},{k:'nesa',t:'staff',base:210e6,pos:30e6,title:'مسئول چیدمان'}];
+const PBASIS={mgr:'tot',asst:'tot',staff:'own'};
+const PTH={'کیف':[2,4,6,9,12,15,19,22,26,30],'کفش':[2,3,4,6,8,10,12,15,17,19],'چمدان':[1,2,3,4,5,6,7,9,10,12],'کیف پول':[2,3,5,8,10,13,15,18,21,25],'اکسسوری':[2,3,4,5,7,9,11,13,15,17],'عینک':[1,2,3,4,5,6,7,9,10,12]};
+const PMUL={'کیف':2,'کفش':2,'چمدان':4,'کیف پول':1,'اکسسوری':.5,'عینک':.5};
+const PGRP={'کیف':['کیف','ساک دستی'],'کفش':['کفش'],'چمدان':['چمدان'],'کیف پول':['کیف پول'],'اکسسوری':['کمربند','جاسوئیچی','گوشواره','چتر','ادکلن'],'عینک':['عینک']};
+const PTIER={staff:[15,20,25,35,40,50,60,70,80,90],asst:[20,25,35,40,50,60,70,80,90,100],mgr:[20,25,35,45,55,65,75,85,95,100]};
+const PAMT=[2.1e6,2.7e6,3.4e6,4.2e6,5.3e6,6.6e6,8e6,10e6,13e6,16e6];
+const PBON={mgr:{reg:[50e6,70e6,110e6,150e6,210e6],clr:[90e6,110e6,150e6,190e6,250e6]},asst:{reg:[30e6,50e6,90e6,130e6,190e6],clr:[70e6,90e6,130e6,170e6,230e6]}};
+const payCfg=e=>PAY.find(c=>ekey(e.name).startsWith(c.k))||{k:'',t:'staff',base:210e6,pos:0,title:'فروشنده'};
+function calcPay(e){const s=curS(),st=SLAST(s),cfg=payCfg(e),own=PBASIS[cfg.t]=='own',rows=own?st.rows.filter(x=>x.emp==e.id):st.rows;
+ const L=Object.keys(PTH).map(g=>{const n=PGRP[g].reduce((a,c)=>a+rows.reduce((z,x)=>z+((x.it&&x.it[c])||0),0),0),lv=PTH[g].filter(t=>n>=t).length;return{g,n,lv,m:PMUL[g],pt:lv*PMUL[g]}}),tot=L.reduce((a,x)=>a+x.pt,0),T=PTIER[cfg.t],ti=T.filter(x=>tot>=x).length,com=ti?PAMT[ti-1]:0,bi=PBON[cfg.t]?[.6,.7,.8,.9,1].filter(x=>st.ach>=x).length:0,bon=bi?PBON[cfg.t][(DB.pay||{}).clr?'clr':'reg'][bi-1]:0;
+ return{cfg,st,own,L,tot,ti,com,bon,next:T[ti]!=null?T[ti]-tot:null,total:cfg.base+cfg.pos+com+bon}}
+V_.pay=()=>{const e=DB.emps.find(x=>x.id==U.emp);if(!e)return'<div class="empty">حساب شما به پرسنل وصل نیست؛ فیش حقوقی برای شما تعریف نشده</div>';
+ const r=calcPay(e),u='ریال',m=x=>fmt(Math.round(x))+' '+u,row=(a,b,c)=>`<div class="row"><span>${a}</span><b${c?` style="color:${c}"`:''}>${b}</b></div>`;
+ return`<div class="card" ${GB}><div style="font-size:11px;opacity:.8;letter-spacing:1px">PAYSLIP · فیش حقوقی</div><div style="font-size:20px;font-weight:800;margin-top:4px">${e.name}</div><div class="sm" style="color:#e8d9c8">${r.cfg.title} · ${MN[r.st.mo-1]} ${fy(pd(r.st.iso).y)} · محاسبه تا ${pdate(r.st.iso)}</div></div>
+<div class="card"><h3>اقلام فیش</h3>${row('حقوق ثابت',m(r.cfg.base))}${r.cfg.pos?row('حق سمت',m(r.cfg.pos)):''}${row('پورسانت (امتیاز '+fmt(r.tot)+' · پلهٔ '+fmt(r.ti)+')',m(r.com))}${PBON[r.cfg.t]?row('پاداش تحقق تارگت ('+pc(r.st.ach)+(DB.pay&&DB.pay.clr?' · حراج':' · عادی')+')',m(r.bon)):''}<div class="row" style="border-top:2px solid var(--gold);margin-top:6px"><b>جمع دریافتی (برآورد تا امروز)</b><b style="font-size:17px">${m(r.total)}</b></div><div class="sm">مبلغ‌ها همان واحد فایل فرمول حقوقی هستند. کسورات (بیمه، مالیات و…) در این فیش لحاظ نشده است.</div></div>
+<div class="card"><h3>جدول امتیاز پورسانت</h3><div class="sm" style="margin-bottom:6px">مبنا: ${r.own?'فروش شخصی':'فروش کل فروشگاه'} این ماه</div>${r.L.map(x=>`<div class="row"><span><b>${x.g}</b><div class="sm">${fmt(x.n)} آیتم · پله ${fmt(x.lv)} × ضریب ${fmt(x.m)}</div></span><b>${fmt(x.pt)} امتیاز</b></div>`).join('')}<div class="row"><b>جمع امتیاز</b><b>${fmt(r.tot)}</b></div>${r.next!=null?`<div class="sm">تا پلهٔ بعدی پورسانت ${fmt(r.next)} امتیاز مانده است.</div>`:'<div class="sm">بالاترین پلهٔ پورسانت 🎉</div>'}</div>`};
+const monthPoster=()=>{const t=tdy(),p=pd(t),force=location.hash=='#poster';let y=p.y,m=p.m;if(p.d!=dim(p.m)){const q=pd(addD(t,-1));if(q.d==dim(q.m)){y=q.y;m=q.m}else if(!force)return''}
+ const key=y+'-'+m,s=curS(),P=SL(s).map(e=>({e,k:K(DB.sales.filter(x=>x.emp==e.id&&mk(x.date)==key))})).filter(x=>x.k.s>0);if(!P.length)return'';
+ const rk=f=>P.slice().sort((a,b)=>f(b)-f(a)),it=rk(x=>x.k.s),am=rk(x=>x.k.amt),up=rk(x=>x.k.upt),sc=x=>it.indexOf(x)+am.indexOf(x)+up.indexOf(x),best=P.slice().sort((a,b)=>sc(a)-sc(b)||b.k.amt-a.k.amt)[0],
+ tl=(i,l,v)=>`<div class="pz-t"><div class="pz-l">${i} ${l}</div><div class="pz-v" style="font-size:17px">${v.e.name.split(' ')[0]}</div></div>`;
+ return`<div class="pz"><div class="pz-top"><div><div class="pz-k">🏆 قهرمانان ماه ${MN[m-1]} ${fy(y)}</div><div class="pz-d">پایان ماه · تا ۲۴ ساعت</div></div></div><div class="pz-mv">⭐ بهترین فروشنده ماه<br><b>${best.e.name}</b><div>${fmt(best.k.s)} آیتم · ${fR(best.k.amt)} ریال · UPT ${fmt(best.k.upt)}</div></div><div class="pz-g">${tl('🎁','بهترین مکمل‌فروش (UPT ${fmt(up[0].k.upt)})'.replace('${fmt(up[0].k.upt)}',fmt(up[0].k.upt)),up[0])}${tl('💰','بیشترین مبلغ ریالی · '+fR(am[0].k.amt),am[0])}${tl('📦','بیشترین تعداد · '+fmt(it[0].k.s)+' آیتم',it[0])}</div></div>`};
+Object.assign(C,{payclr(t){const o={...(DB.pay||{}),clr:t.value=='1'};ck(sb.from('app_settings').upsert({store_id:curS().id,key:'payroll',value:o})).then(load).catch(e=>alert(e.message)).then(render)}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-a]'),a=t&&t.dataset.a;if(a&&A[a]&&(OA.includes(a)||(AA.includes(a)?ADM():(ENT()||XA(a)))))A[a](t.dataset)});
 document.addEventListener('change',e=>{const t=e.target.closest('[data-c]'),c=t&&t.dataset.c;if(c&&C[c]&&(OC.includes(c)||(AC.includes(c)?ADM():(ENT()||(c=='actst'&&AW())))))C[c](t)});
 document.addEventListener('input',e=>{const t=e.target;if(t.id=='ns_q'){NQ=t.value;$('ns_l').innerHTML=nsRows()}else if(t.id&&t.id.startsWith('sq_')){const ctx=t.dataset.ctx;clearTimeout(SQT);SQT=setTimeout(async()=>{const q=t.value.trim(),box=$('sr_'+ctx);if(q.length<2){SRCH[ctx]=[];if(box)box.innerHTML='';return}try{SRCH[ctx]=await ck(sb.rpc('item_search',{s:curS().id,q}));if(box)box.innerHTML=srRows(ctx)||'<div class="sm" style="margin:6px 0">موردی پیدا نشد</div>'}catch(er){if(box)box.innerHTML='<div class="err">'+er.message+'</div>'}},250)}else if(t.classList&&t.classList.contains('sdq')){const i=+t.dataset.i;if(SDR[i])SDR[i].qty=N(t.value)}});
