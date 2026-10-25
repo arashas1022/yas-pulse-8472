@@ -120,7 +120,7 @@ nav{background:rgba(20,19,17,.55);backdrop-filter:blur(24px) saturate(170%);-web
 .dbk{background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .bar{background:rgba(255,255,255,.1)}
 @media (min-width:1000px){nav{border-top:0;border-inline-start:1px solid rgba(255,255,255,.12)}}
-</style></head><body><div id="app"></div><script>setTimeout(function(){var a=document.getElementById("app");if(!a.innerHTML||a.innerHTML.indexOf("در حال بارگذاری")>-1){a.innerHTML='<div style="margin:80px 20px;text-align:center;line-height:2;color:#f3efe9">'+(window.supabase?"سرور Supabase جواب نمی‌دهد یا اینترنت قطع/فیلتر است.":"کتابخانهٔ Supabase بارگذاری نشد؛ اینترنت یا فیلترینگ CDN را چک کنید (با VPN یا اینترنت دیگر امتحان کنید).")+(window.XLSX?"":"<br>(کتابخانهٔ اکسل هم بارگذاری نشد)")+"<br><b>v22</b></div>"}},15000)</script>
+</style></head><body><div id="app"></div><script>setTimeout(function(){var a=document.getElementById("app");if(!a.innerHTML||a.innerHTML.indexOf("در حال بارگذاری")>-1){a.innerHTML='<div style="margin:80px 20px;text-align:center;line-height:2;color:#f3efe9">'+(window.supabase?"سرور Supabase جواب نمی‌دهد یا اینترنت قطع/فیلتر است.":"کتابخانهٔ Supabase بارگذاری نشد؛ اینترنت یا فیلترینگ CDN را چک کنید (با VPN یا اینترنت دیگر امتحان کنید).")+(window.XLSX?"":"<br>(کتابخانهٔ اکسل هم بارگذاری نشد)")+"<br><b>v23</b></div>"}},15000)</script>
 <script>
 const $=i=>document.getElementById(i);
 const N=s=>parseFloat(String(s).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[٫,]/g,'.'));
@@ -149,7 +149,7 @@ let DB={ts:[],ff:[],stores:[],emps:[],sales:[],rs:[],acts:[],ns:[],stk:{},set:{}
 const ADM=()=>!!U&&U.lvl=='adm',ENT=()=>!!U&&(U.lvl=='adm'||U.lvl=='ent');
 const D=x=>String(x).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).trim(),UN=x=>String(x).toLowerCase().replace(/\s+/g,' ').trim();
 const em=u=>UN(u).replace(/ /g,'.')+'@retailpulse.app';
-const ck=async x=>{const r=await x;if(r.error)throw new Error(r.error.message);return r.data};
+const PEND=[];const ck=async x=>{let n='?';try{n=x.url.pathname.split('/').slice(-2).join('/')}catch(e){}PEND.push(n);try{const r=await x;if(r.error)throw new Error(r.error.message);return r.data}finally{const i=PEND.indexOf(n);if(i>=0)PEND.splice(i,1)}};
 const RC=['price','size_color','design','browsing'],CATID={},CATN={},SFA={open:'باز',in_progress:'در حال انجام',completed:'تکمیل',cancelled:'لغو'},SEN=Object.fromEntries(Object.entries(SFA).map(x=>[x[1],x[0]]));
 const addD=(iso,n)=>new Date(new Date(iso+'T12:00:00').getTime()+n*864e5).toISOString().slice(0,10);
 const c_low=()=>DB.set.low??3;
@@ -609,9 +609,9 @@ const XP=[{k:'ehsan',adm:1}];
 const AW=()=>ENT()||!!(U&&U.role=='sales'),NSW=()=>ENT()||!!(U&&U.x&&U.x.ns);
 const XA=a=>!!U&&((U.role=='sales'&&a=='addAct')||(!!(U.x&&U.x.ns)&&['nsAdd','nsDel','nsDelAll','pick'].includes(a)));
 function applyXP(me,user){const ks=[ekey(me?me.name:''),ekey(String(user.email||'').split('@')[0])],X=XP.find(p=>ks.some(k=>k.startsWith(p.k)));if(!X)return;if(X.adm){U.lvl='adm';U.role='mgr'}if(X.xn)U.xn=X.xn;if(X.ns)U.x={ns:1}}
-function login(){return`<main><div class="card" style="margin-top:40px"><div class="logo">RETAIL PULSE</div><div class="sub">Retail Performance & Operations Platform</div><br><label>نام کاربری</label><input id="l_u" autocapitalize="off" autocomplete="username" placeholder="مثلاً ehsan yekta"><label>رمز</label><input id="l_p" type="password"><div class="err">${ERR}</div><button class="btn" data-a="login">ورود</button><p class="sm">نام کاربری و رمز را از مدیر فروشگاه بگیرید. (نسخه v22) بعد از ورود می‌توانید رمزتان را عوض کنید.</p></div></main>`}
+function login(){return`<main><div class="card" style="margin-top:40px"><div class="logo">RETAIL PULSE</div><div class="sub">Retail Performance & Operations Platform</div><br><label>نام کاربری</label><input id="l_u" autocapitalize="off" autocomplete="username" placeholder="مثلاً ehsan yekta"><label>رمز</label><input id="l_p" type="password"><div class="err">${ERR}</div><button class="btn" data-a="login">ورود</button><p class="sm">نام کاربری و رمز را از مدیر فروشگاه بگیرید. (نسخه v23) بعد از ورود می‌توانید رمزتان را عوض کنید.</p></div></main>`}
  function render0(){const a=$('app');if(!U){a.innerHTML=login();return}const ac=!ADM()&&U.emp?DB.acc[U.emp]:null,nav=ac?['dash',...ac.filter(k=>k!='dash'&&k!='set'&&k!='imp')]:[...new Set(NAV[U.role].concat(U.xn||[],ADM()?['set']:[]))];nav.includes('pay')||nav.push('pay');NAVC=nav;if(!nav.includes(V)&&!isG(V))V=nav[0];
- a.innerHTML=`<header><div><div class="logo">RETAIL PULSE</div><div class="sub">${U.name} · ${R[U.role]} · ${ADM()?'دسترسی کامل':ENT()?'ثبت اطلاعات':'فقط مشاهده'} · v22</div></div><button class="ln" style="font-size:13px" data-a="out">خروج</button></header><main>${V_[V]()}</main><nav>${navHtml(nav)}</nav>`}
+ a.innerHTML=`<header><div><div class="logo">RETAIL PULSE</div><div class="sub">${U.name} · ${R[U.role]} · ${ADM()?'دسترسی کامل':ENT()?'ثبت اطلاعات':'فقط مشاهده'} · v23</div></div><button class="ln" style="font-size:13px" data-a="out">خروج</button></header><main>${V_[V]()}</main><nav>${navHtml(nav)}</nav>`}
 function render(){const a=$('app'),y=window.scrollY;a.style.minHeight=a.offsetHeight+'px';try{render0()}catch(e){a.innerHTML='<div class="card" style="margin:30px 14px;direction:ltr;text-align:left"><b style="color:var(--r)">Render error (V='+V+')</b><pre style="white-space:pre-wrap;font-size:11px">'+String(e&&e.stack||e).slice(0,700).replace(/</g,'&lt;')+'</pre><button class="btn" data-a="out">Logout</button></div>'}window.scrollTo(0,y);requestAnimationFrame(()=>a.style.minHeight='')}
 /* daily targets from timesheet: share ∝ hours present; Thu & Fri weigh x2; largest-remainder rounding so sum = month target */
 let TGS=null;
@@ -805,7 +805,7 @@ document.addEventListener('focusin',e=>{const t=e.target;if(t.id&&t.id.startsWit
 window.addEventListener('popstate',e=>{if(U){V=(e.state&&e.state.v)||'dash';DR='';render()}});
 ['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault()));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&U)refresh()});
-const TMO=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('پاسخی از سرور نیامد؛ اینترنت یا وضعیت پروژه Supabase را بررسی کنید')),ms))]);
+const TMO=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('پاسخی از سرور نیامد؛ درخواست‌های منتظر: '+(PEND.join(' , ')||'—'))),ms))]);
 const showErr=m=>{if(!U){ERR='خطا: '+m;try{render()}catch(e){$('app').innerHTML='<div class="empty" style="margin-top:80px">خطا: '+m+'</div>'}}};
 window.addEventListener('error',e=>showErr(e.message||'نامشخص'));window.addEventListener('unhandledrejection',e=>showErr((e.reason&&e.reason.message)||String(e.reason)));
 $('app').innerHTML='<div class="empty" style="margin-top:80px">در حال بارگذاری…</div>';
