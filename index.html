@@ -645,7 +645,7 @@ V_.tmine=()=>{const s=curS();if(U.role=='sales'){const e=DB.emps.find(x=>x.id==U
  return SL(s).map(e=>accCard('tm'+e.id,'👤',e.name,'تارگت ماه '+fmt(eT(e,s,s.mon))+' آیتم',()=>tgtTable(e,s))).join('')||'<div class="empty">پرسنلی نیست</div>'};
 const A={
 dr(d){DR=DR==d.id?'':d.id;render()},drx(){DR='';render()},
-async login(){const un=$('l_u').value,p=D($('l_p').value);let r=await sb.auth.signInWithPassword({email:em(un),password:p});if(r.error)r=await sb.auth.signInWithPassword({email:em(un),password:p+'-rp'});if(r.error){ERR='نام کاربری یا رمز نادرست است';return render()}try{await start();ERR=''}catch(e){ERR=e.message;await sb.auth.signOut();U=null}render()},
+async login(){const un=$('l_u').value,p=D($('l_p').value);let r=await sb.auth.signInWithPassword({email:em(un),password:p});if(r.error)r=await sb.auth.signInWithPassword({email:em(un),password:p+'-rp'});if(r.error){ERR='نام کاربری یا رمز نادرست است';return render()}try{await TMO(start(),20000);ERR=''}catch(e){ERR=e.message;sb.auth.signOut().catch(()=>{});U=null}render()},
 out(){CH&&sb.removeChannel(CH);CH=null;sb.auth.signOut();U=null;render()},
 go(d){V=d.id;ERR='';DR='';try{history.pushState({v:V},'')}catch(e){}render();window.scrollTo(0,0);if(V=='set'&&ADM())loadUsers().then(()=>{if(!editing())render()});if(V=='hist')loadHist().then(()=>{if(!editing())render()}).catch(()=>{});refresh()},lt(d){LT=d.id;render()},pr(d){PR=d.id;render()},
 async saveSale(){const s=curS(),eid=SE==='S'?0:(SE||SL(s)[0].id),date=SD,a=NA($('f_a').value||0),inv=N($('f_i').value||0),vis=N($('f_v').value||0),mps=$('f_p').value.trim(),mp=mps===''?null:N(mps),r=DB.sales.find(x=>x.store==s.id&&x.date==date&&x.emp==eid&&!x.ret),it={...(r&&r.it||{})};
@@ -805,6 +805,9 @@ document.addEventListener('focusin',e=>{const t=e.target;if(t.id&&t.id.startsWit
 window.addEventListener('popstate',e=>{if(U){V=(e.state&&e.state.v)||'dash';DR='';render()}});
 ['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault()));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&U)refresh()});
+const TMO=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('پاسخی از سرور نیامد؛ اینترنت یا وضعیت پروژه Supabase را بررسی کنید')),ms))]);
+const showErr=m=>{if(!U){ERR='خطا: '+m;try{render()}catch(e){$('app').innerHTML='<div class="empty" style="margin-top:80px">خطا: '+m+'</div>'}}};
+window.addEventListener('error',e=>showErr(e.message||'نامشخص'));window.addEventListener('unhandledrejection',e=>showErr((e.reason&&e.reason.message)||String(e.reason)));
 $('app').innerHTML='<div class="empty" style="margin-top:80px">در حال بارگذاری…</div>';
-(async()=>{try{const{data:{session}}=await sb.auth.getSession();if(session)await start()}catch(e){U=null}render()})();
+(async()=>{try{const{data:{session}}=await TMO(sb.auth.getSession(),8000);if(session)await TMO(start(),20000)}catch(e){U=null;ERR=e.message}render()})();
 </script></body></html>
