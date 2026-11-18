@@ -806,7 +806,7 @@ async function loadPromo(){const s=curS();let all=[],i=0;PLE='';
 function promoCalc(e,y,m){const o={on:false,n3:0,n4:0,a3:0,a4:0,total:0};if(PLC===null||j2i(y,m,dim(m))<PRM.from)return o;o.on=true;
  const inv={};
  PLC.forEach(x=>{if(!x.doc||!(+x.amount_rial>0))return;const k=x.sale_date+'|'+x.doc,v=inv[k]=inv[k]||{d:x.sale_date,q:0,by:{}};v.q+=x.qty;v.by[x.employee_id]=(v.by[x.employee_id]||0)+x.qty});
- Object.values(inv).forEach(v=>{if(mk(v.d)!=y+'-'+m||v.d<PRM.from)return;const own=Object.entries(v.by).sort((a,b)=>b[1]-a[1])[0][0];if(own!=e.id)return;if(v.q==3)o.n3++;else if(v.q==4)o.n4++});
+ Object.values(inv).forEach(v=>{if(mk(v.d)!=y+'-'+m||v.d<PRM.from)return;const own=Object.entries(v.by).sort((a,b)=>b[1]-a[1])[0][0];if(own!=e.id)return;if(v.q==3)o.n3++;else if(v.q>=4)o.n4++});
  o.a3=o.n3*PRM.n3;o.a4=o.n4*PRM.n4;o.total=o.a3+o.a4;return o}
 const promoCard=(e,pr,all,ctx)=>{
  if(PLC===null){if(!PLB){PLB=1;loadPromo().then(()=>{PLB=0;render()})}return'<div class="card"><div class="empty">در حال بارگذاری پروموشن…</div></div>'}
@@ -814,12 +814,12 @@ const promoCard=(e,pr,all,ctx)=>{
  if(!pr.on)return'';
  const m=x=>fmt(Math.round(x))+' ریال',miss=PLC.filter(x=>!x.doc&&mk(x.sale_date)==ctx.y+'-'+ctx.mo).length,
  row=(a,b)=>`<div class="row"><span>${a}</span><b>${b}</b></div>`;
- let h=`<div class="card"><h3>🎁 پروموشن فاکتور ۳ و ۴ آیتمی · ${e.name}</h3><div class="sm">از ${pdate(PRM.from)} · آیتم‌های بدون قیمت (مثل bag) شمرده نمی‌شوند</div>
-${row('فاکتور ۳ آیتمی: '+fmt(pr.n3)+' عدد × '+m(PRM.n3),m(pr.a3))}${row('فاکتور ۴ آیتمی: '+fmt(pr.n4)+' عدد × '+m(PRM.n4),m(pr.a4))}
+ let h=`<div class="card"><h3>🎁 پروموشن فاکتور ۳ و ۴+ آیتمی · ${e.name}</h3><div class="sm">از ${pdate(PRM.from)} · آیتم‌های بدون قیمت (مثل bag) شمرده نمی‌شوند</div>
+${row('فاکتور ۳ آیتمی: '+fmt(pr.n3)+' عدد × '+m(PRM.n3),m(pr.a3))}${row('فاکتور ۴ آیتمی و بیشتر: '+fmt(pr.n4)+' عدد × '+m(PRM.n4),m(pr.a4))}
 <div class="row" style="border-top:2px solid var(--gold);margin-top:6px"><b>جمع پورسانت پروموشن</b><b>${m(pr.total)}</b></div>`;
  if(miss)h+=`<div class="al" style="border-color:var(--y)">${fmt(miss)} ردیف فروش این ماه شمارهٔ فاکتور ندارد (قبل از این نسخه وارد شده)؛ اکسل را دوباره وارد کن.</div>`;
  h+='</div>';
- if(all)h+=`<div class="card"><h3>پروموشن کل پرسنل</h3>${SL(curS()).map(x=>{const p=promoCalc(x,ctx.y,ctx.mo);return`<div class="row" style="display:block"><b>${x.name}</b><div class="sm">۳ آیتمی: ${fmt(p.n3)} (${m(p.a3)}) · ۴ آیتمی: ${fmt(p.n4)} (${m(p.a4)}) · جمع <b>${m(p.total)}</b></div></div>`}).join('')}</div>`;
+ if(all)h+=`<div class="card"><h3>پروموشن کل پرسنل</h3>${SL(curS()).map(x=>{const p=promoCalc(x,ctx.y,ctx.mo);return`<div class="row" style="display:block"><b>${x.name}</b><div class="sm">۳ آیتمی: ${fmt(p.n3)} (${m(p.a3)}) · ۴+ آیتمی: ${fmt(p.n4)} (${m(p.a4)}) · جمع <b>${m(p.total)}</b></div></div>`}).join('')}</div>`;
  return h};
 Object.assign(C,{async paym(t){PYM={y:+$('pm_y').value,m:+$('pm_m').value};const k=PYM.y+'-'+PYM.m;try{if(!PYC[k])await loadPayM(PYM.y,PYM.m)}catch(e){alert(e.message)}render()},payp(t){PEMP=t.value;render()}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-a]'),a=t&&t.dataset.a;if(a&&A[a]&&(OA.includes(a)||(AA.includes(a)?ADM():(ENT()||XA(a)))))A[a](t.dataset)});
