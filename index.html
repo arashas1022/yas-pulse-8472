@@ -154,7 +154,7 @@ const RC=['price','size_color','design','browsing'],CATID={},CATN={},SFA={open:'
 const addD=(iso,n)=>new Date(new Date(iso+'T12:00:00').getTime()+n*864e5).toISOString().slice(0,10);
 const c_low=()=>DB.set.low??3;
 const stock=c=>DB.stk[CATID[c]]||0;
-async function load(){
+async function load(){PLC=null;
  const st=await ck(sb.from('stores').select('*').order('code'));if(!st.length)throw new Error('هیچ فروشگاهی برای این کاربر تعریف نشده');
  const S0=st[0],t=tdy(),p=pd(t),sid=S0.id;
  const[cat,ro,mt,se,ls,ns,ap,as,gr,pa,sn,sk,ff,ts]=await Promise.all([ck(sb.from('categories').select('id,name')),ck(sb.rpc('roster',{s:sid})),
@@ -255,7 +255,7 @@ const matchEmp=(name,emps)=>{const k=ekey(name);let best=null,bd=9;emps.forEach(
 function parseImport(sh,emps){const W=[],E=[],ent=[],ff=[],tg=[],dis=[],lines=[],unk={},per={},docs={};let yr=0,mon=0,mt=0;const names=Object.keys(sh);
  for(const nm of names){const rows=sh[nm],h=rows.findIndex(r=>r&&String(r[0]).includes('شماره سند'));if(h<0)continue;const e=matchEmp(nm,emps);if(!e){E.push('شیت «'+nm+'» به هیچ پرسنلی وصل نشد');continue}
   for(const r of rows.slice(h+1)){const[doc,dt,prod,amt,q]=r;if(doc==null||String(doc).trim()==='')continue;const m=/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/.exec(String(dt||'').trim());if(!m||!(q>0)){E.push('ردیف نامعتبر در «'+nm+'»: '+doc);continue}
-   const y=+m[1],mo=+m[2],d=+m[3];yr=y;mon=mo;const iso=j2i(y,mo,d),c=catOf(prod);if(!c)unk[prod]=1;lines.push({emp:e.id,date:iso,title:String(prod).trim(),qty:q,amt:+amt||0});
+   const y=+m[1],mo=+m[2],d=+m[3];yr=y;mon=mo;const iso=j2i(y,mo,d),c=catOf(prod);if(!c)unk[prod]=1;lines.push({emp:e.id,date:iso,doc:String(doc).trim(),title:String(prod).trim(),qty:q,amt:+amt||0});
    const k=e.id+'|'+iso,p=per[k]=per[k]||{emp:e,date:iso,d,pieces:0,amt:0,items:{}};p.pieces+=q;p.amt+=+amt||0;if(c)p.items[c]=(p.items[c]||0)+q;
    const dk=iso+'|'+doc,dd=docs[dk]=docs[dk]||{};dd[e.id]=(dd[e.id]||0)+q}}
  const inv={};Object.entries(docs).forEach(([dk,o])=>{const iso=dk.split('|')[0];let best=null;Object.entries(o).forEach(([id,q])=>{if(!best||q>best[1])best=[id,q]});const k=best[0]+'|'+iso;inv[k]=(inv[k]||0)+1;if(Object.keys(o).length>1)W.push('فاکتور مشترک بین چند نفر ('+dk.split('|')[1]+') به یک نفر داده شد')});
@@ -712,7 +712,7 @@ async impGo(){const r=IMP,s=curS();if(!r||r.E.length||IMB)return;IMB=1;IMM='';re
   for(let i=0;i<rows.length;i+=200){const o=await ck(sb.from('sales_entries').insert(rows.slice(i,i+200)).select('id,employee_id,entry_date'));o.forEach(z=>ids[z.employee_id+'|'+z.entry_date]=z.id)}
   const its=[];r.ent.forEach(x=>Object.entries(x.items).forEach(([c,q])=>its.push({entry_id:ids[x.emp+'|'+x.date],category_id:CATID[c],qty:q})));
   for(let i=0;i<its.length;i+=200)await ck(sb.from('sales_entry_items').insert(its.slice(i,i+200)));
-  await ck(sb.from('sales_lines').delete().eq('store_id',s.id).gte('sale_date',d1).lte('sale_date',d2));for(let i=0;i<r.lines.length;i+=500)await ck(sb.from('sales_lines').insert(r.lines.slice(i,i+500).map(x=>({store_id:s.id,sale_date:x.date,employee_id:x.emp,title:x.title,qty:x.qty,amount_rial:x.amt}))));
+  await ck(sb.from('sales_lines').delete().eq('store_id',s.id).gte('sale_date',d1).lte('sale_date',d2));for(let i=0;i<r.lines.length;i+=500)await ck(sb.from('sales_lines').insert(r.lines.slice(i,i+500).map(x=>({store_id:s.id,sale_date:x.date,employee_id:x.emp,doc:x.doc,title:x.title,qty:x.qty,amount_rial:x.amt}))));
   if(r.ff.length)await ck(sb.from('footfall').upsert(r.ff.map(x=>({store_id:s.id,entry_date:x.date,visitors:x.v})),{onConflict:'store_id,entry_date'}));
   if(r.tg.length)await ck(sb.from('daily_targets').upsert(r.tg.map(x=>({store_id:s.id,employee_id:x.emp,target_date:x.date,pieces:x.pieces})),{onConflict:'employee_id,target_date'}));
   if(r.mt)await ck(sb.from('store_month_targets').upsert({store_id:s.id,j_year:r.yr,j_month:r.mon,target_pieces:r.mt}));
@@ -792,11 +792,35 @@ V_.pay=()=>{const vw=DB.emps.find(x=>x.id==U.emp);if(!vw)return'<div class="empt
  const s=curS(),st=SLAST(s),cy=pd(st.iso).y,all=payCfg(vw).t=='mgr',e=(all&&PEMP&&DB.emps.find(x=>x.id==PEMP))||vw,sel=PYM||{y:cy,m:st.mo},isCur=sel.y==cy&&sel.m==st.mo,pc_=PYC[sel.y+'-'+sel.m];
  const picker=`<div class="card"><h3>انتخاب ماه${all?' و پرسنل':''}</h3><div class="grid"><select data-c="paym" id="pm_m">${MN.map((n,i)=>`<option value="${i+1}" ${i+1==sel.m?'selected':''}>${n}</option>`).join('')}</select><select data-c="paym" id="pm_y">${[cy-1,cy].map(y=>`<option value="${y}" ${y==sel.y?'selected':''}>${fy(y)}</option>`).join('')}</select></div>${all?`<label>فیش حقوقی</label><select data-c="payp">${DB.emps.map(x=>`<option value="${x.id}" ${x.id==e.id?'selected':''}>${x.name}</option>`).join('')}</select>`:''}</div>`;
  if(!isCur&&!pc_)return picker+'<div class="empty">در حال بارگذاری…</div>';
- const ctx=isCur?{rows:st.rows,ach:st.ach,iso:st.iso,mo:st.mo,y:cy}:{rows:pc_.rows,ach:pc_.target?pc_.rows.reduce((a,x)=>a+x.sales,0)/pc_.target:0,iso:j2i(sel.y,sel.m,dim(sel.m)),mo:sel.m,y:sel.y},r=calcPay2(e,ctx),u='ریال',m=x=>fmt(Math.round(x))+' '+u,row=(a,b)=>`<div class="row"><span>${a}</span><b>${b}</b></div>`,ch=champOf(ctx.rows);
+ const ctx=isCur?{rows:st.rows,ach:st.ach,iso:st.iso,mo:st.mo,y:cy}:{rows:pc_.rows,ach:pc_.target?pc_.rows.reduce((a,x)=>a+x.sales,0)/pc_.target:0,iso:j2i(sel.y,sel.m,dim(sel.m)),mo:sel.m,y:sel.y},r=calcPay2(e,ctx),pr=promoCalc(e,ctx.y,ctx.mo),u='ریال',m=x=>fmt(Math.round(x))+' '+u,row=(a,b)=>`<div class="row"><span>${a}</span><b>${b}</b></div>`,ch=champOf(ctx.rows);
  return`<div class="card" ${GB}><div style="font-size:11px;opacity:.8;letter-spacing:1px">PAYSLIP · فیش حقوقی</div><div style="font-size:20px;font-weight:800;margin-top:4px">${e.name}</div><div class="sm" style="color:#e8d9c8">${r.cfg.title} · ${MN[ctx.mo-1]} ${fy(ctx.y)} · ${isCur?'محاسبه تا '+pdate(ctx.iso):'پایان ماه'}</div>${ch?`<div style="margin-top:8px">🏆 قهرمان ماه: <b>${ch.e.name}</b></div>`:''}</div>
-<div class="card"><h3>اقلام فیش</h3>${row('حقوق ثابت',m(r.cfg.base))}${r.cfg.pos?row('حق سمت',m(r.cfg.pos)):''}${row('پورسانت (امتیاز '+fmt(r.tot)+' · پلهٔ '+fmt(r.ti)+')',m(r.com))}${PBON[r.cfg.t]?row('پاداش تحقق تارگت ('+pc(ctx.ach)+((DB.pay||{}).clr?' · حراج':' · عادی')+')',m(r.bon)):''}<div class="row" style="border-top:2px solid var(--gold);margin-top:6px"><b>جمع دریافتی${isCur?' (برآورد تا امروز)':''}</b><b style="font-size:17px">${m(r.total)}</b></div><div class="sm">کسورات قانونی (بیمه، مالیات و…) لحاظ نشده است.</div></div>
+<div class="card"><h3>اقلام فیش</h3>${row('حقوق ثابت',m(r.cfg.base))}${r.cfg.pos?row('حق سمت',m(r.cfg.pos)):''}${row('پورسانت (امتیاز '+fmt(r.tot)+' · پلهٔ '+fmt(r.ti)+')',m(r.com))}${PBON[r.cfg.t]?row('پاداش تحقق تارگت ('+pc(ctx.ach)+((DB.pay||{}).clr?' · حراج':' · عادی')+')',m(r.bon)):''}${pr.on?row('پورسانت پروموشن فاکتور ۳ و ۴ آیتمی ('+fmt(pr.n3)+' + '+fmt(pr.n4)+' فاکتور)',m(pr.total)):''}<div class="row" style="border-top:2px solid var(--gold);margin-top:6px"><b>جمع دریافتی${isCur?' (برآورد تا امروز)':''}</b><b style="font-size:17px">${m(r.total+pr.total)}</b></div><div class="sm">کسورات قانونی (بیمه، مالیات و…) لحاظ نشده است.</div></div>
 <div class="card"><h3>جدول امتیاز پورسانت</h3><div class="sm" style="margin-bottom:6px">مبنا: ${r.own?'فروش شخصی':'فروش کل فروشگاه'} · پس از کسر تعویض و مرجوعی</div>${r.L.map(x=>`<div class="row"><span><b>${x.g}</b><div class="sm">${fmt(x.n)} آیتم · پله ${fmt(x.lv)} × ضریب ${fmt(x.m)}</div></span><b>${fmt(x.pt)} امتیاز</b></div>`).join('')}<div class="row"><b>جمع امتیاز</b><b>${fmt(r.tot)}</b></div>${isCur?(r.next!=null?`<div class="sm">تا پلهٔ بعدی ${fmt(r.next)} امتیاز مانده است.</div>`:'<div class="sm">بالاترین پلهٔ پورسانت 🎉</div>'):''}</div>
-<div class="card"><h3>تعویض و مرجوعی این ماه</h3>${r.rq||r.ra?`${row('تعداد کسرشده',fmt(r.rq)+' آیتم')}${row('مبلغ کسرشده',m(r.ra))}`:'<div class="sm">موردی ثبت نشده ✓</div>'}</div>`+picker};
+<div class="card"><h3>تعویض و مرجوعی این ماه</h3>${r.rq||r.ra?`${row('تعداد کسرشده',fmt(r.rq)+' آیتم')}${row('مبلغ کسرشده',m(r.ra))}`:'<div class="sm">موردی ثبت نشده ✓</div>'}</div>`+promoCard(e,pr,all,ctx)+picker};
+/* ===== promo: 3-item and 4-item invoices (from 1405/08/21) ===== */
+const PRM={from:j2i(1405,8,21),n3:5e6,n4:7.5e6};
+let PLC=null,PLB=0,PLE='';
+async function loadPromo(){const s=curS();let all=[],i=0;PLE='';
+ try{for(;;){const r=await ck(sb.from('sales_lines').select('employee_id,sale_date,doc,qty,amount_rial').eq('store_id',s.id).gte('sale_date',PRM.from).order('id').range(i,i+999));all=all.concat(r);if(r.length<1000)break;i+=1000}PLC=all}
+ catch(e){PLC=[];PLE=e.message}}
+function promoCalc(e,y,m){const o={on:false,n3:0,n4:0,a3:0,a4:0,total:0};if(PLC===null||j2i(y,m,dim(m))<PRM.from)return o;o.on=true;
+ const inv={};
+ PLC.forEach(x=>{if(!x.doc||!(+x.amount_rial>0))return;const k=x.sale_date+'|'+x.doc,v=inv[k]=inv[k]||{d:x.sale_date,q:0,by:{}};v.q+=x.qty;v.by[x.employee_id]=(v.by[x.employee_id]||0)+x.qty});
+ Object.values(inv).forEach(v=>{if(mk(v.d)!=y+'-'+m||v.d<PRM.from)return;const own=Object.entries(v.by).sort((a,b)=>b[1]-a[1])[0][0];if(own!=e.id)return;if(v.q==3)o.n3++;else if(v.q==4)o.n4++});
+ o.a3=o.n3*PRM.n3;o.a4=o.n4*PRM.n4;o.total=o.a3+o.a4;return o}
+const promoCard=(e,pr,all,ctx)=>{
+ if(PLC===null){if(!PLB){PLB=1;loadPromo().then(()=>{PLB=0;render()})}return'<div class="card"><div class="empty">در حال بارگذاری پروموشن…</div></div>'}
+ if(PLE)return`<div class="card"><div class="err">خطا در پروموشن: ${PLE}</div><div class="sm">ستون doc در جدول sales_lines ساخته شده؟</div></div>`;
+ if(!pr.on)return'';
+ const m=x=>fmt(Math.round(x))+' ریال',miss=PLC.filter(x=>!x.doc&&mk(x.sale_date)==ctx.y+'-'+ctx.mo).length,
+ row=(a,b)=>`<div class="row"><span>${a}</span><b>${b}</b></div>`;
+ let h=`<div class="card"><h3>🎁 پروموشن فاکتور ۳ و ۴ آیتمی · ${e.name}</h3><div class="sm">از ${pdate(PRM.from)} · آیتم‌های بدون قیمت (مثل bag) شمرده نمی‌شوند</div>
+${row('فاکتور ۳ آیتمی: '+fmt(pr.n3)+' عدد × '+m(PRM.n3),m(pr.a3))}${row('فاکتور ۴ آیتمی: '+fmt(pr.n4)+' عدد × '+m(PRM.n4),m(pr.a4))}
+<div class="row" style="border-top:2px solid var(--gold);margin-top:6px"><b>جمع پورسانت پروموشن</b><b>${m(pr.total)}</b></div>`;
+ if(miss)h+=`<div class="al" style="border-color:var(--y)">${fmt(miss)} ردیف فروش این ماه شمارهٔ فاکتور ندارد (قبل از این نسخه وارد شده)؛ اکسل را دوباره وارد کن.</div>`;
+ h+='</div>';
+ if(all)h+=`<div class="card"><h3>پروموشن کل پرسنل</h3>${SL(curS()).map(x=>{const p=promoCalc(x,ctx.y,ctx.mo);return`<div class="row" style="display:block"><b>${x.name}</b><div class="sm">۳ آیتمی: ${fmt(p.n3)} (${m(p.a3)}) · ۴ آیتمی: ${fmt(p.n4)} (${m(p.a4)}) · جمع <b>${m(p.total)}</b></div></div>`}).join('')}</div>`;
+ return h};
 Object.assign(C,{async paym(t){PYM={y:+$('pm_y').value,m:+$('pm_m').value};const k=PYM.y+'-'+PYM.m;try{if(!PYC[k])await loadPayM(PYM.y,PYM.m)}catch(e){alert(e.message)}render()},payp(t){PEMP=t.value;render()}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-a]'),a=t&&t.dataset.a;if(a&&A[a]&&(OA.includes(a)||(AA.includes(a)?ADM():(ENT()||XA(a)))))A[a](t.dataset)});
 document.addEventListener('change',e=>{const t=e.target.closest('[data-c]'),c=t&&t.dataset.c;if(c&&C[c]&&(OC.includes(c)||(AC.includes(c)?ADM():(ENT()||(c=='actst'&&AW())))))C[c](t)});
